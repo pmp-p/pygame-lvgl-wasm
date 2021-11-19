@@ -3,6 +3,17 @@
 #include "structmember.h"
 #include "lvgl/lvgl.h"
 
+#ifdef COMPILE_FOR_SDL
+	#define SDL_MAIN_HANDLED        /*To fix SDL's "undefined reference to WinMain" issue*/
+	#include <SDL2/SDL.h>
+	#define USE_MONITOR 1
+	#include "lv_drivers/display/monitor.h"
+	#include "lv_drivers/indev/mouse.h"
+#else
+	#include "lv_drivers/display/fbdev.h"
+	#include "lv_drivers/indev/evdev.h"
+#endif
+
 
 #if LV_COLOR_DEPTH != 16
 #error Only 16 bits color depth is currently supported
@@ -24132,9 +24143,28 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     lv_disp_flush_ready(disp_drv);
 }
 
-static lv_disp_drv_t display_driver = {0};
-static lv_indev_drv_t indev_driver = {0};
-static int indev_driver_registered = 0;
+// Register the display in LVGL
+static void init_display_driver() {
+    lv_disp_drv_t display_driver;
+
+    lv_disp_drv_init(&display_driver);
+    display_driver.hor_res = LV_HOR_RES_MAX;
+    display_driver.ver_res = LV_VER_RES_MAX;
+
+#ifdef COMPILE_FOR_SDL
+	display_driver.flush_cb = monitor_flush;
+#else
+    display_driver.flush_cb = disp_flush;
+	// CKI:  TODO: use this instead of own written code?: display_driver.flush_cb = fbdev_flush;
+#endif
+
+    lv_disp_buf_init(&disp_buffer,disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
+    display_driver.buffer = &disp_buffer;
+
+    lv_disp_drv_register(&display_driver);
+}
+
+static lv_indev_t * indev_mouse;
 static int indev_x, indev_y, indev_state=0;
 
 static bool indev_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t *data) {
@@ -24145,27 +24175,35 @@ static bool indev_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t *data
     return false;
 }
 
+// Initialize pointing device
+static lv_indev_t *init_pointing_device() {
+	lv_indev_drv_t indev_drv;
+
+	lv_indev_drv_init(&indev_drv);
+	indev_drv.type = LV_INDEV_TYPE_POINTER;
+#ifdef COMPILE_FOR_SDL
+	indev_drv.read_cb = mouse_read;
+#else
+	indev_drv.read_cb = indev_read;
+	// TODO: indev_drv.read_cb = evdev_read;
+#endif
+	return lv_indev_drv_register(&indev_drv);
+}
+
 
 static PyObject *
 send_mouse_event(PyObject *self, PyObject *args, PyObject *kwds) {
     static char *kwlist[] = {"x", "y", "pressed", NULL};
     int x=0, y=0, pressed=0;
-    
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "iip", kwlist, &x, &y, &pressed)) {
         return NULL;
     }
-    
-    if (!indev_driver_registered) {
-        lv_indev_drv_init(&indev_driver);
-        indev_driver.type = LV_INDEV_TYPE_POINTER;
-        indev_driver.read_cb = indev_read;
-        lv_indev_drv_register(&indev_driver);
-        indev_driver_registered = 1;
-    }
+
     indev_x = x;
     indev_y = y;
     indev_state = pressed ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
-    
+
     Py_RETURN_NONE;
 }
 
@@ -25095,23 +25133,22 @@ PyInit_lvgl(void) {
         "lv_calendar", &pylv_calendar_Type,
         "lv_spinbox", &pylv_spinbox_Type);
     
-    PyModule_AddObject(module, "framebuffer", PyMemoryView_FromMemory(framebuffer, LV_HOR_RES_MAX * LV_VER_RES_MAX * 2, PyBUF_READ));
+    PyModule_AddObject(module, "framebuffer", PyMemoryView_FromMemory(framebuffer, sizeof(framebuffer), PyBUF_READ));
     PyModule_AddObject(module, "HOR_RES", PyLong_FromLong(LV_HOR_RES_MAX));
     PyModule_AddObject(module, "VER_RES", PyLong_FromLong(LV_VER_RES_MAX));
 
-
-    lv_disp_drv_init(&display_driver);
-    display_driver.hor_res = LV_HOR_RES_MAX;
-    display_driver.ver_res = LV_VER_RES_MAX;
-    
-    display_driver.flush_cb = disp_flush;
-    
-    lv_disp_buf_init(&disp_buffer,disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
-    display_driver.buffer = &disp_buffer;
-
     lv_init();
-    
-    lv_disp_drv_register(&display_driver);
+
+#ifdef COMPILE_FOR_SDL
+    monitor_init();
+    mouse_init();
+#else
+    //fbdev_init();   // Framebuffer device initialize
+    //evdev_init();   // Event device initialize
+#endif
+
+    init_display_driver();
+    indev_mouse = init_pointing_device();
 
     return module;
     
