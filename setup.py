@@ -29,8 +29,7 @@ if os.name == 'nt':
     for path in '.', 'win32drv':
         sources.extend(glob.glob('lv_drivers/' + path + '/*.c'))
 
-#extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE", "-DCOMPILE_FOR_SDL"]
-extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE"]
+extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE", "-DCOMPILE_FOR_SDL"]
 if os.name != 'nt':
     extra_compile_args.extend(["-g", "-Wno-unused-function", ])
 

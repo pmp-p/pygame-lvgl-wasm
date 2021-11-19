@@ -4,7 +4,11 @@
 #include "lvgl/lvgl.h"
 
 #ifdef COMPILE_FOR_SDL
-	#define SDL_MAIN_HANDLED        /*To fix SDL's "undefined reference to WinMain" issue*/
+    #define _DEFAULT_SOURCE     // needed for usleep()
+	#include <stdlib.h>
+	#include <unistd.h>
+	#include <stdio.h>
+	#define SDL_MAIN_HANDLED    // To fix SDL's "undefined reference to WinMain" issue
 	#include <SDL2/SDL.h>
 	#define USE_MONITOR 1
 	#include "lv_drivers/display/monitor.h"
@@ -31,7 +35,6 @@
  *
  * This would be a deadlock situation
  */
-
 #define LVGL_LOCK \
     if (lock) { \
         Py_BEGIN_ALLOW_THREADS \
@@ -126,7 +129,6 @@ typedef pylv_Textarea pylv_Spinbox;
 /****************************************************************
  * Forward declaration of type objects                          *
  ****************************************************************/
-
 PyObject *typesdict = NULL;
 
 
@@ -508,7 +510,6 @@ PyObject *PtrObject_fromptr(const void *ptr) {
 /****************************************************************
  * Helper functions                                              *
  ****************************************************************/
-
 static void (*lock)(void*) = NULL;
 static void* lock_arg = 0;
 
@@ -526,7 +527,6 @@ void lv_set_lock_unlock( void (*flock)(void *), void * flock_arg,
     lock = flock;
     unlock = funlock;
 }
-
 
 
 /* This signal handler is critical in the deallocation process of lvgl and
@@ -587,7 +587,6 @@ static void install_signal_cb(pylv_Obj * py_obj) {
 }
 
 
-
 /* Given an lvgl lv_obj, return the accompanying Python object. If the 
  * accompanying object already exists, it is returned (with ref count increased).
  * If the lv_obj is not yet known to Python, a new Python object is created,
@@ -596,7 +595,6 @@ static void install_signal_cb(pylv_Obj * py_obj) {
  *
  * Returns a new reference
  */
-
 PyObject * pyobj_from_lv(lv_obj_t *obj) {
     pylv_Obj *pyobj;
     lv_obj_type_t objtype;
@@ -637,12 +635,7 @@ PyObject * pyobj_from_lv(lv_obj_t *obj) {
 
 /* lvgl.Style class
  *
- *
- *
- *
- *
  */
-
 typedef struct {
     PyObject_HEAD
     lv_style_t *style;
@@ -1920,11 +1913,9 @@ static int pylv_style_t_arg_converter(PyObject *obj, void* target) {
     *(lv_style_t **)target = (void *)((StyleObject*)obj) -> style;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
-
 }
 
 
- 
 /* Given a pointer to a c struct, return the Python struct object
  * of that struct.
  *
@@ -1932,10 +1923,8 @@ static int pylv_style_t_arg_converter(PyObject *obj, void* target) {
  * associated Python object, i.e. the global ones and those
  * created from Python
  *
- * The module global struct_dict dictionary stores all struct
- * objects known
+ * The module global struct_dict dictionary stores all known struct objects.
  */
- 
 static PyObject* struct_dict;
 
 static PyObject *pystruct_from_lv(const void *c_struct) {
@@ -1960,10 +1949,6 @@ static PyObject *pystruct_from_lv(const void *c_struct) {
 }
 
 
-
-
-
-
 /****************************************************************
  * Custom types: structs                                        *  
  ****************************************************************/
@@ -1974,7 +1959,6 @@ typedef struct {
     PyObject *owner; // NULL = reference to global C data, self=allocated @ init, other object=sharing from that object; decref owner when we are deallocated
     bool readonly;
 } StructObject;
-
 
 static PyObject*
 Struct_repr(StructObject *self) {
@@ -2057,16 +2041,12 @@ pystruct_from_c(PyTypeObject *type, const void* ptr, size_t size, bool copy) {
         return NULL;
     }
 
-
     return (PyObject*)ret;
-
-
 }
 
 
 // Struct members whose type is unsupported, get / set a 'blob', which stores
 // a reference to the data, which can be copied but not accessed otherwise
-
 static PyTypeObject Blob_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "lvgl.blob",
@@ -2080,8 +2060,6 @@ static PyTypeObject Blob_Type = {
     .tp_as_buffer = &Struct_bufferprocs
 };
 
-
-
 static int long_to_int(PyObject *value, long *v, long min, long max) {
     long r = PyLong_AsLong(value);
     if ((r == -1) && PyErr_Occurred()) return -1;
@@ -2091,8 +2069,7 @@ static int long_to_int(PyObject *value, long *v, long min, long max) {
     }
     *v = r;
     return 0;
-}   
-
+}
 
 static int struct_check_readonly(StructObject *self) {
     if (self->readonly) {
@@ -2227,11 +2204,9 @@ struct_get_struct(StructObject *self, struct_closure_t *closure) {
         ret->readonly = self->readonly;
     }
     return (PyObject*)ret;
-
 }
 
-
-/* Generic setter for atrributes which are a struct
+/* Generic setter for attributes which are a struct
  *
  * Setting can be via either an object of the same type, or via a dict,
  * which could be passed as a keyword argument dict to a constructor of the struct
@@ -2241,7 +2216,6 @@ struct_get_struct(StructObject *self, struct_closure_t *closure) {
  */
 static int
 struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure) {
-
     PyObject *attr = NULL;
     
     if (struct_check_readonly(self)) return -1;
@@ -2268,10 +2242,8 @@ struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure
         
         Py_DECREF(attr);
         return 0;
-        
     }
-    
-    
+
     int isinstance = PyObject_IsInstance(value, (PyObject *)closure->type);
     
     if (isinstance == -1) return -1; // error in PyObject_IsInstance
@@ -2288,7 +2260,6 @@ struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure
     
     return 0;
 }
-
 
 static int
 struct_init(StructObject *self, PyObject *args, PyObject *kwds, PyTypeObject *type, size_t size) 
@@ -11035,7 +11006,6 @@ static PyObject* build_constclass(char dtype, char *name, ...) {
 error:
     Py_DECREF(constclass_type);
     return NULL;
-
 }
 
 
@@ -11047,7 +11017,6 @@ error:
  * lv_obj_get_child and lv_obj_get_child_back are not really Pythonic. This
  * implementation returns a list of children
  */
- 
 static PyObject*
 pylv_obj_get_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
@@ -11179,9 +11148,6 @@ pylv_label_get_letter_on(pylv_Label *self, PyObject *args, PyObject *kwds)
     return Py_BuildValue("i", index);
 }
 
-
-
-
 static PyObject*
 pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
 {
@@ -11205,7 +11171,6 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     return ret;
 
 }
-
 
 // lv_list_focus takes lv_obj_t* as first argument, but it is not the list itself!
 static PyObject*
@@ -11235,7 +11200,6 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
 }
 
 
-
 /****************************************************************
  * Methods and object definitions                               *
  ****************************************************************/
@@ -11254,7 +11218,6 @@ pylv_obj_dealloc(pylv_Obj *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -15728,7 +15691,6 @@ pylv_cont_dealloc(pylv_Cont *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -15919,7 +15881,6 @@ pylv_btn_dealloc(pylv_Btn *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -16048,7 +16009,6 @@ pylv_imgbtn_dealloc(pylv_Imgbtn *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -16150,7 +16110,6 @@ pylv_label_dealloc(pylv_Label *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -16497,7 +16456,6 @@ pylv_img_dealloc(pylv_Img *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -16782,7 +16740,6 @@ pylv_line_dealloc(pylv_Line *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -16905,7 +16862,6 @@ pylv_page_dealloc(pylv_Page *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -17496,7 +17452,6 @@ pylv_list_dealloc(pylv_List *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -17781,7 +17736,6 @@ pylv_chart_dealloc(pylv_Chart *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -18248,7 +18202,6 @@ pylv_table_dealloc(pylv_Table *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -18575,7 +18528,6 @@ pylv_checkbox_dealloc(pylv_Checkbox *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -18748,7 +18700,6 @@ pylv_cpicker_dealloc(pylv_Cpicker *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -19026,7 +18977,6 @@ pylv_bar_dealloc(pylv_Bar *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -19274,7 +19224,6 @@ pylv_slider_dealloc(pylv_Slider *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -19418,7 +19367,6 @@ pylv_led_dealloc(pylv_Led *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -19546,7 +19494,6 @@ pylv_btnmatrix_dealloc(pylv_Btnmatrix *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -19894,7 +19841,6 @@ pylv_keyboard_dealloc(pylv_Keyboard *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -20087,7 +20033,6 @@ pylv_dropdown_dealloc(pylv_Dropdown *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -20471,7 +20416,6 @@ pylv_roller_dealloc(pylv_Roller *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -20698,7 +20642,6 @@ pylv_textarea_dealloc(pylv_Textarea *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -21291,7 +21234,6 @@ pylv_canvas_dealloc(pylv_Canvas *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -21476,7 +21418,6 @@ pylv_win_dealloc(pylv_Win *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -21912,7 +21853,6 @@ pylv_tabview_dealloc(pylv_Tabview *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -22127,7 +22067,6 @@ pylv_tileview_dealloc(pylv_Tileview *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -22232,7 +22171,6 @@ pylv_msgbox_dealloc(pylv_Msgbox *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -22472,7 +22410,6 @@ pylv_objmask_dealloc(pylv_Objmask *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -22553,7 +22490,6 @@ pylv_linemeter_dealloc(pylv_Linemeter *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -22793,7 +22729,6 @@ pylv_gauge_dealloc(pylv_Gauge *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -23015,7 +22950,6 @@ pylv_switch_dealloc(pylv_Switch *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -23131,7 +23065,6 @@ pylv_arc_dealloc(pylv_Arc *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -23511,7 +23444,6 @@ pylv_spinner_dealloc(pylv_Spinner *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -23684,7 +23616,6 @@ pylv_calendar_dealloc(pylv_Calendar *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -23843,7 +23774,6 @@ pylv_spinbox_dealloc(pylv_Spinbox *self)
         PyObject_ClearWeakRefs((PyObject *) self);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
-
 }
 
 static int
@@ -24128,8 +24058,6 @@ char framebuffer[LV_HOR_RES_MAX * LV_VER_RES_MAX * 2];
 /* disp_flush should copy from the VDB (virtual display buffer to the screen.
  * In our case, we copy to the framebuffer
  */
-
- 
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p) {
     char *dest = framebuffer + ((area->y1)*LV_HOR_RES_MAX + area->x1) * 2;
     char *src = (char *) color_p;
@@ -24139,7 +24067,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
         src += 2*(area->x2-area->x1+1);
         dest += 2*LV_HOR_RES_MAX;
     }
-    
+
     lv_disp_flush_ready(disp_drv);
 }
 
@@ -24165,15 +24093,6 @@ static void init_display_driver() {
 }
 
 static lv_indev_t * indev_mouse;
-static int indev_x, indev_y, indev_state=0;
-
-static bool indev_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t *data) {
-    data->point.x = indev_x;
-    data->point.y = indev_y;
-    data->state = indev_state;
-
-    return false;
-}
 
 // Initialize pointing device
 static lv_indev_t *init_pointing_device() {
@@ -24184,27 +24103,9 @@ static lv_indev_t *init_pointing_device() {
 #ifdef COMPILE_FOR_SDL
 	indev_drv.read_cb = mouse_read;
 #else
-	indev_drv.read_cb = indev_read;
-	// TODO: indev_drv.read_cb = evdev_read;
+	indev_drv.read_cb = evdev_read;
 #endif
 	return lv_indev_drv_register(&indev_drv);
-}
-
-
-static PyObject *
-send_mouse_event(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"x", "y", "pressed", NULL};
-    int x=0, y=0, pressed=0;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iip", kwlist, &x, &y, &pressed)) {
-        return NULL;
-    }
-
-    indev_x = x;
-    indev_y = y;
-    indev_state = pressed ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
-
-    Py_RETURN_NONE;
 }
 
 
@@ -24212,17 +24113,15 @@ send_mouse_event(PyObject *self, PyObject *args, PyObject *kwds) {
  *  Module global stuff                                         *
  ****************************************************************/
 
-
+// Define functions that can be called from Python
 static PyMethodDef lvglMethods[] = {
     {"scr_act",  pylv_scr_act, METH_NOARGS, NULL},
     {"scr_load", (PyCFunction)pylv_scr_load, METH_VARARGS | METH_KEYWORDS, NULL},
     {"poll", poll, METH_NOARGS, NULL},
-    {"send_mouse_event", (PyCFunction)send_mouse_event, METH_VARARGS | METH_KEYWORDS, NULL},
+//    {"send_mouse_event", (PyCFunction)send_mouse_event, METH_VARARGS | METH_KEYWORDS, NULL},
 //    {"report_style_mod", (PyCFunction)report_style_mod, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
-
-
 
 static struct PyModuleDef lvglmodule = {
     PyModuleDef_HEAD_INIT,
@@ -25143,13 +25042,14 @@ PyInit_lvgl(void) {
     monitor_init();
     mouse_init();
 #else
-    //fbdev_init();   // Framebuffer device initialize
-    //evdev_init();   // Event device initialize
+    fbdev_init();   // Framebuffer device initialize
+    evdev_init();   // Event device initialize
 #endif
 
     init_display_driver();
     indev_mouse = init_pointing_device();
 
+    printf("blah");
     return module;
     
 error:
