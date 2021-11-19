@@ -68,7 +68,7 @@ print(s3.btnPrint.get_type())
 
 while True:
     """
-    Call LVGL's task handler & make the screen sleep for 20 milliseconds.
+    Call LVGL's task handler & make the screen sleep for 10 milliseconds.
     """
-    lvgl.poll()     # CKI: TODO: make this poll time of 1ms a parameter so we can do it slower
-    sleep(1)
+    lvgl.poll()     # CKI: TODO: make this poll time of 10ms a parameter
+    sleep(0.01)

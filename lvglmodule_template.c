@@ -1048,7 +1048,7 @@ pylv_scr_load(PyObject *self, PyObject *args, PyObject *kwds) {
 static PyObject *
 poll(PyObject *self, PyObject *args) {
     LVGL_LOCK
-    lv_tick_inc(1);
+    lv_tick_inc(10);
     lv_task_handler();
     LVGL_UNLOCK
     
@@ -1107,6 +1107,7 @@ static lv_indev_t *init_pointing_device() {
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
 #ifdef COMPILE_FOR_SDL
+    printf("Connecting mouse_read to LVGL\n");
 	indev_drv.read_cb = mouse_read;
 #else
 	indev_drv.read_cb = evdev_read;
@@ -1216,7 +1217,6 @@ PyInit_lvgl(void) {
     init_display_driver();
     init_pointing_device();
 
-    printf("blah");
     return module;
     
 error:
