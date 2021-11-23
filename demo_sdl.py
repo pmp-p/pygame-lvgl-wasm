@@ -66,9 +66,17 @@ s3.btnPrint.set_event_cb(print)
 
 print(s3.btnPrint.get_type())
 
+
+last_printed_time = -1
 while True:
     """
     Call LVGL's task handler & make the screen sleep for 10 milliseconds.
     """
-    lvgl.poll()     # CKI: TODO: make this poll time of 10ms a parameter
+    lvgl.tick_inc(10)
+    lvgl.task_handler()
     sleep(0.01)
+
+    inactive_time = int(lvgl.disp_get_inactive_time(disp=0) / 1000)
+    if last_printed_time != inactive_time:
+        last_printed_time = inactive_time
+        print(f"Inactive for {inactive_time} seconds")

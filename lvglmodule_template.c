@@ -841,7 +841,6 @@ void pylv_event_cb(lv_obj_t *obj, lv_event_t event) {
         PyErr_Print();
         PyErr_Clear();
     }
-    
 }
 
 static PyObject *
@@ -910,7 +909,7 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os", kwlist , &img_src, &txt)) return NULL; 
       
-    if (img_src!=Py_None) {
+    if (img_src != Py_None) {
         PyErr_SetString(PyExc_ValueError, "only img_src == None is currently supported");
         return NULL;
     } 
@@ -920,7 +919,6 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     LVGL_UNLOCK
     
     return ret;
-
 }
 
 // lv_list_focus takes lv_obj_t* as first argument, but it is not the list itself!
@@ -954,7 +952,6 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
 /****************************************************************
  * Methods and object definitions                               *
  ****************************************************************/
-
 <<<objects:
     
 static void
@@ -1017,12 +1014,9 @@ static PyTypeObject pylv_{name}_Type = {{
 >>>
 
 
-
-
 /****************************************************************
  * Miscellaneous functions                                      *
  ****************************************************************/
-
 static PyObject *
 pylv_scr_act(PyObject *self, PyObject *args) {
     lv_obj_t *scr;
@@ -1044,7 +1038,6 @@ pylv_scr_load(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
-
 static PyObject *
 poll(PyObject *self, PyObject *args) {
     LVGL_LOCK
@@ -1055,6 +1048,71 @@ poll(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+pylv_tick_inc(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"tick_period", NULL};
+    uint32_t tick_period;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist, &tick_period)) return NULL;
+
+    LVGL_LOCK
+    lv_tick_inc(tick_period);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Create a task
+static PyObject *
+pylv_task_create(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"task_xcb", "period", "prio", "user_data", NULL};
+    pylv_Obj *task_xcb, *user_data = NULL;
+    uint32_t period, prio;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!IIO", kwlist, &pylv_obj_Type, &task_xcb, &period, &prio, &user_data)) return NULL;
+    LVGL_LOCK
+    lv_task_create(task_xcb, period, prio, user_data);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Delete a task
+static PyObject *
+pylv_task_del(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"task", NULL};
+    pylv_Obj *task = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &task)) return NULL;
+    if (task == NULL) return NULL;
+
+    LVGL_LOCK
+    lv_task_del(task);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pylv_task_handler(PyObject *self, PyObject *args) {
+    LVGL_LOCK
+    lv_task_handler();
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Returns the inactive time for the spec
+// @parm disp is optional and can be None
+static PyObject *
+pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"disp", NULL};
+    pylv_Obj *disp = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &disp)) return NULL;
+
+    LVGL_LOCK
+    uint32_t inactive_time = lv_disp_get_inactive_time(disp);
+    LVGL_UNLOCK
+
+    return PyLong_FromLong(inactive_time);
+}
 
 /* TODO: all the framebuffer display driver stuff could be separated (i.e. do not default to it but allow user to register custom frame buffer driver) */
 
@@ -1107,14 +1165,12 @@ static lv_indev_t *init_pointing_device() {
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
 #ifdef COMPILE_FOR_SDL
-    printf("Connecting mouse_read to LVGL\n");
 	indev_drv.read_cb = mouse_read;
 #else
 	indev_drv.read_cb = evdev_read;
 #endif
 	return lv_indev_drv_register(&indev_drv);
 }
-
 
 /****************************************************************
  *  Module global stuff                                         *
@@ -1125,8 +1181,11 @@ static PyMethodDef lvglMethods[] = {
     {"scr_act",  pylv_scr_act, METH_NOARGS, NULL},
     {"scr_load", (PyCFunction)pylv_scr_load, METH_VARARGS | METH_KEYWORDS, NULL},
     {"poll", poll, METH_NOARGS, NULL},
-//    {"send_mouse_event", (PyCFunction)send_mouse_event, METH_VARARGS | METH_KEYWORDS, NULL},
-//    {"report_style_mod", (PyCFunction)report_style_mod, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"tick_inc", (PyCFunction)pylv_tick_inc, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"task_handler", pylv_task_handler, METH_NOARGS, NULL},
+    {"task_create", (PyCFunction)pylv_task_create,  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"task_del", (PyCFunction)pylv_task_del,  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"disp_get_inactive_time", (PyCFunction)pylv_disp_get_inactive_time, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

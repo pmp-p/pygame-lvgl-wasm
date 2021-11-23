@@ -569,12 +569,14 @@ static lv_res_t pylv_signal_cb(lv_obj_t * obj, lv_signal_t sign, void * param)
     return orig_signal_cb(obj, sign, param);
 }
 
-int check_alive(pylv_Obj* obj) {
+/* Returns true when the underlying C-object still exists.
+ */
+bool is_alive(pylv_Obj* obj) {
     if (!obj->ref) {
         PyErr_SetString(PyExc_RuntimeError, "the underlying C object has been deleted");
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static void install_signal_cb(pylv_Obj * py_obj) {
@@ -11016,7 +11018,7 @@ error:
 static PyObject*
 pylv_obj_get_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     lv_obj_t *child = NULL;
     PyObject *pychild;
     PyObject *ret = PyList_New(0);
@@ -11046,7 +11048,7 @@ pylv_obj_get_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     lv_obj_type_t result;
     PyObject *list = NULL;
     PyObject *str = NULL;
@@ -11086,12 +11088,11 @@ void pylv_event_cb(lv_obj_t *obj, lv_event_t event) {
         PyErr_Print();
         PyErr_Clear();
     }
-    
 }
 
 static PyObject *
 pylv_obj_set_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds) {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"event_cb", NULL};
     PyObject *callback, *old_callback;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &callback)) return NULL;
@@ -11112,7 +11113,7 @@ pylv_obj_set_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds) {
 static PyObject*
 pylv_label_get_letter_pos(pylv_Label *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"index", NULL};
     int index;
     lv_point_t pos;
@@ -11128,7 +11129,7 @@ pylv_label_get_letter_pos(pylv_Label *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_letter_on(pylv_Label *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"pos", NULL};
     int x, y, index;
     lv_point_t pos;
@@ -11147,7 +11148,7 @@ pylv_label_get_letter_on(pylv_Label *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"img_src", "txt", NULL};
     PyObject *img_src;
     const char *txt;
@@ -11155,7 +11156,7 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os", kwlist , &img_src, &txt)) return NULL; 
       
-    if (img_src!=Py_None) {
+    if (img_src != Py_None) {
         PyErr_SetString(PyExc_ValueError, "only img_src == None is currently supported");
         return NULL;
     } 
@@ -11165,14 +11166,13 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     LVGL_UNLOCK
     
     return ret;
-
 }
 
 // lv_list_focus takes lv_obj_t* as first argument, but it is not the list itself!
 static PyObject*
 pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"obj", "anim_en", NULL};
     pylv_Btn * obj;
     lv_obj_t *parent;
@@ -11199,7 +11199,6 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
 /****************************************************************
  * Methods and object definitions                               *
  ****************************************************************/
-
 
     
 static void
@@ -11241,7 +11240,7 @@ pylv_obj_init(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_del(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11254,7 +11253,7 @@ pylv_obj_del(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11274,7 +11273,7 @@ pylv_obj_invalidate_area(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_invalidate(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11294,7 +11293,7 @@ pylv_obj_area_is_visible(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_is_visible(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11307,7 +11306,7 @@ pylv_obj_is_visible(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"parent", NULL};
     pylv_Obj * parent;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &parent)) return NULL;
@@ -11321,7 +11320,7 @@ pylv_obj_set_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_move_foreground(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11334,7 +11333,7 @@ pylv_obj_move_foreground(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_move_background(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11347,7 +11346,7 @@ pylv_obj_move_background(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"x", "y", NULL};
     short int x;
     short int y;
@@ -11362,7 +11361,7 @@ pylv_obj_set_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"x", NULL};
     short int x;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &x)) return NULL;
@@ -11376,7 +11375,7 @@ pylv_obj_set_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"y", NULL};
     short int y;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &y)) return NULL;
@@ -11390,7 +11389,7 @@ pylv_obj_set_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", "h", NULL};
     short int w;
     short int h;
@@ -11405,7 +11404,7 @@ pylv_obj_set_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", NULL};
     short int w;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &w)) return NULL;
@@ -11419,7 +11418,7 @@ pylv_obj_set_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"h", NULL};
     short int h;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &h)) return NULL;
@@ -11433,7 +11432,7 @@ pylv_obj_set_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", NULL};
     short int w;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &w)) return NULL;
@@ -11447,7 +11446,7 @@ pylv_obj_set_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"h", NULL};
     short int h;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &h)) return NULL;
@@ -11461,7 +11460,7 @@ pylv_obj_set_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_width_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", NULL};
     short int w;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &w)) return NULL;
@@ -11475,7 +11474,7 @@ pylv_obj_set_width_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_height_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"h", NULL};
     short int h;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &h)) return NULL;
@@ -11489,7 +11488,7 @@ pylv_obj_set_height_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11506,7 +11505,7 @@ pylv_obj_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11522,7 +11521,7 @@ pylv_obj_align_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11538,7 +11537,7 @@ pylv_obj_align_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_mid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11555,7 +11554,7 @@ pylv_obj_align_mid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_mid_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11571,7 +11570,7 @@ pylv_obj_align_mid_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_mid_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -11587,7 +11586,7 @@ pylv_obj_align_mid_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11600,7 +11599,7 @@ pylv_obj_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_auto_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11614,7 +11613,7 @@ pylv_obj_set_auto_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_ext_click_area(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"left", "right", "top", "bottom", NULL};
     short int left;
     short int right;
@@ -11631,7 +11630,7 @@ pylv_obj_set_ext_click_area(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_add_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "style", NULL};
     unsigned char part;
     lv_style_t * style;
@@ -11646,7 +11645,7 @@ pylv_obj_add_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_remove_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "style", NULL};
     unsigned char part;
     lv_style_t * style;
@@ -11661,7 +11660,7 @@ pylv_obj_remove_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_clean_style_list(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -11675,7 +11674,7 @@ pylv_obj_clean_style_list(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_reset_style_list(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -11689,7 +11688,7 @@ pylv_obj_reset_style_list(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_refresh_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "prop", NULL};
     unsigned char part;
     unsigned short int prop;
@@ -11704,7 +11703,7 @@ pylv_obj_refresh_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_remove_style_local_prop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "prop", NULL};
     unsigned char part;
     unsigned short int prop;
@@ -11719,7 +11718,7 @@ pylv_obj_remove_style_local_prop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11733,7 +11732,7 @@ pylv_obj_set_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_adv_hittest(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11747,7 +11746,7 @@ pylv_obj_set_adv_hittest(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_click(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11761,7 +11760,7 @@ pylv_obj_set_click(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11775,7 +11774,7 @@ pylv_obj_set_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11789,7 +11788,7 @@ pylv_obj_set_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_drag_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"drag_dir", NULL};
     unsigned char drag_dir;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &drag_dir)) return NULL;
@@ -11803,7 +11802,7 @@ pylv_obj_set_drag_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_drag_throw(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11817,7 +11816,7 @@ pylv_obj_set_drag_throw(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_drag_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11831,7 +11830,7 @@ pylv_obj_set_drag_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_focus_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11845,7 +11844,7 @@ pylv_obj_set_focus_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_gesture_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11859,7 +11858,7 @@ pylv_obj_set_gesture_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_parent_event(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -11873,7 +11872,7 @@ pylv_obj_set_parent_event(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_base_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dir", NULL};
     unsigned char dir;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &dir)) return NULL;
@@ -11887,7 +11886,7 @@ pylv_obj_set_base_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_add_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"prot", NULL};
     unsigned char prot;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &prot)) return NULL;
@@ -11901,7 +11900,7 @@ pylv_obj_add_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_clear_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"prot", NULL};
     unsigned char prot;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &prot)) return NULL;
@@ -11915,7 +11914,7 @@ pylv_obj_clear_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -11929,7 +11928,7 @@ pylv_obj_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_add_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -11943,7 +11942,7 @@ pylv_obj_add_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_clear_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -11957,7 +11956,7 @@ pylv_obj_clear_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_finish_transitions(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -11985,7 +11984,7 @@ pylv_obj_set_design_cb(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_refresh_ext_draw_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -11998,7 +11997,7 @@ pylv_obj_refresh_ext_draw_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_screen(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12020,7 +12019,7 @@ pylv_obj_get_disp(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12035,7 +12034,7 @@ pylv_obj_get_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_count_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12048,7 +12047,7 @@ pylv_obj_count_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_count_children_recursive(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12075,7 +12074,7 @@ pylv_obj_get_inner_coords(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12088,7 +12087,7 @@ pylv_obj_get_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12101,7 +12100,7 @@ pylv_obj_get_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12114,7 +12113,7 @@ pylv_obj_get_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12127,7 +12126,7 @@ pylv_obj_get_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12140,7 +12139,7 @@ pylv_obj_get_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12153,7 +12152,7 @@ pylv_obj_get_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_height_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12166,7 +12165,7 @@ pylv_obj_get_height_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_width_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12179,7 +12178,7 @@ pylv_obj_get_width_margin(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_width_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"div", "span", NULL};
     unsigned char div;
     unsigned char span;
@@ -12194,7 +12193,7 @@ pylv_obj_get_width_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_height_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"div", "span", NULL};
     unsigned char div;
     unsigned char span;
@@ -12209,7 +12208,7 @@ pylv_obj_get_height_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_auto_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12222,7 +12221,7 @@ pylv_obj_get_auto_realign(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_ext_click_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12235,7 +12234,7 @@ pylv_obj_get_ext_click_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_ext_click_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12248,7 +12247,7 @@ pylv_obj_get_ext_click_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_ext_click_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12261,7 +12260,7 @@ pylv_obj_get_ext_click_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_ext_click_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12274,7 +12273,7 @@ pylv_obj_get_ext_click_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_get_ext_draw_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -12294,7 +12293,7 @@ pylv_obj_get_style_list(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_local_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12308,7 +12307,7 @@ pylv_obj_get_local_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_style_radius(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12322,7 +12321,7 @@ pylv_obj_get_style_radius(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_radius(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12338,7 +12337,7 @@ pylv_obj_set_style_local_radius(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_style_clip_corner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12352,7 +12351,7 @@ pylv_obj_get_style_clip_corner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_clip_corner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12368,7 +12367,7 @@ pylv_obj_set_style_local_clip_corner(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12382,7 +12381,7 @@ pylv_obj_get_style_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12398,7 +12397,7 @@ pylv_obj_set_style_local_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_style_transform_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12412,7 +12411,7 @@ pylv_obj_get_style_transform_width(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_transform_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12428,7 +12427,7 @@ pylv_obj_set_style_local_transform_width(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_transform_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12442,7 +12441,7 @@ pylv_obj_get_style_transform_height(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_transform_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12458,7 +12457,7 @@ pylv_obj_set_style_local_transform_height(pylv_Obj *self, PyObject *args, PyObje
 static PyObject*
 pylv_obj_get_style_transform_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12472,7 +12471,7 @@ pylv_obj_get_style_transform_angle(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_transform_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12488,7 +12487,7 @@ pylv_obj_set_style_local_transform_angle(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_transform_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12502,7 +12501,7 @@ pylv_obj_get_style_transform_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_set_style_local_transform_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12518,7 +12517,7 @@ pylv_obj_set_style_local_transform_zoom(pylv_Obj *self, PyObject *args, PyObject
 static PyObject*
 pylv_obj_get_style_opa_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12532,7 +12531,7 @@ pylv_obj_get_style_opa_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_opa_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12548,7 +12547,7 @@ pylv_obj_set_style_local_opa_scale(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12562,7 +12561,7 @@ pylv_obj_get_style_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12578,7 +12577,7 @@ pylv_obj_set_style_local_pad_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_style_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12592,7 +12591,7 @@ pylv_obj_get_style_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12608,7 +12607,7 @@ pylv_obj_set_style_local_pad_bottom(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12622,7 +12621,7 @@ pylv_obj_get_style_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12638,7 +12637,7 @@ pylv_obj_set_style_local_pad_left(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_get_style_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12652,7 +12651,7 @@ pylv_obj_get_style_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12668,7 +12667,7 @@ pylv_obj_set_style_local_pad_right(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_pad_inner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12682,7 +12681,7 @@ pylv_obj_get_style_pad_inner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_inner(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12698,7 +12697,7 @@ pylv_obj_set_style_local_pad_inner(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_margin_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12712,7 +12711,7 @@ pylv_obj_get_style_margin_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_margin_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12728,7 +12727,7 @@ pylv_obj_set_style_local_margin_top(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_margin_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12742,7 +12741,7 @@ pylv_obj_get_style_margin_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_margin_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12758,7 +12757,7 @@ pylv_obj_set_style_local_margin_bottom(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_margin_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12772,7 +12771,7 @@ pylv_obj_get_style_margin_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_margin_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12788,7 +12787,7 @@ pylv_obj_set_style_local_margin_left(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_margin_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12802,7 +12801,7 @@ pylv_obj_get_style_margin_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_margin_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12818,7 +12817,7 @@ pylv_obj_set_style_local_margin_right(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_bg_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12832,7 +12831,7 @@ pylv_obj_get_style_bg_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_bg_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12848,7 +12847,7 @@ pylv_obj_set_style_local_bg_blend_mode(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_bg_main_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12862,7 +12861,7 @@ pylv_obj_get_style_bg_main_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_bg_main_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12878,7 +12877,7 @@ pylv_obj_set_style_local_bg_main_stop(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_bg_grad_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12892,7 +12891,7 @@ pylv_obj_get_style_bg_grad_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_bg_grad_stop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12908,7 +12907,7 @@ pylv_obj_set_style_local_bg_grad_stop(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_bg_grad_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12922,7 +12921,7 @@ pylv_obj_get_style_bg_grad_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_bg_grad_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12966,7 +12965,7 @@ pylv_obj_set_style_local_bg_grad_color(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_bg_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -12980,7 +12979,7 @@ pylv_obj_get_style_bg_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_bg_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -12996,7 +12995,7 @@ pylv_obj_set_style_local_bg_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_style_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13010,7 +13009,7 @@ pylv_obj_get_style_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13026,7 +13025,7 @@ pylv_obj_set_style_local_border_width(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_border_side(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13040,7 +13039,7 @@ pylv_obj_get_style_border_side(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_border_side(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13056,7 +13055,7 @@ pylv_obj_set_style_local_border_side(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_border_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13070,7 +13069,7 @@ pylv_obj_get_style_border_blend_mode(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_border_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13086,7 +13085,7 @@ pylv_obj_set_style_local_border_blend_mode(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_border_post(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13100,7 +13099,7 @@ pylv_obj_get_style_border_post(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_border_post(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13130,7 +13129,7 @@ pylv_obj_set_style_local_border_color(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_border_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13144,7 +13143,7 @@ pylv_obj_get_style_border_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_border_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13160,7 +13159,7 @@ pylv_obj_set_style_local_border_opa(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_outline_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13174,7 +13173,7 @@ pylv_obj_get_style_outline_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_outline_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13190,7 +13189,7 @@ pylv_obj_set_style_local_outline_width(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_outline_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13204,7 +13203,7 @@ pylv_obj_get_style_outline_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_outline_pad(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13220,7 +13219,7 @@ pylv_obj_set_style_local_outline_pad(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_outline_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13234,7 +13233,7 @@ pylv_obj_get_style_outline_blend_mode(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_set_style_local_outline_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13264,7 +13263,7 @@ pylv_obj_set_style_local_outline_color(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_outline_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13278,7 +13277,7 @@ pylv_obj_get_style_outline_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_outline_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13294,7 +13293,7 @@ pylv_obj_set_style_local_outline_opa(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_shadow_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13308,7 +13307,7 @@ pylv_obj_get_style_shadow_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_shadow_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13324,7 +13323,7 @@ pylv_obj_set_style_local_shadow_width(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_shadow_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13338,7 +13337,7 @@ pylv_obj_get_style_shadow_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_shadow_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13354,7 +13353,7 @@ pylv_obj_set_style_local_shadow_ofs_x(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_shadow_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13368,7 +13367,7 @@ pylv_obj_get_style_shadow_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_shadow_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13384,7 +13383,7 @@ pylv_obj_set_style_local_shadow_ofs_y(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_shadow_spread(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13398,7 +13397,7 @@ pylv_obj_get_style_shadow_spread(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_shadow_spread(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13414,7 +13413,7 @@ pylv_obj_set_style_local_shadow_spread(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_shadow_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13428,7 +13427,7 @@ pylv_obj_get_style_shadow_blend_mode(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_shadow_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13458,7 +13457,7 @@ pylv_obj_set_style_local_shadow_color(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_get_style_shadow_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13472,7 +13471,7 @@ pylv_obj_get_style_shadow_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_shadow_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13488,7 +13487,7 @@ pylv_obj_set_style_local_shadow_opa(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_pattern_repeat(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13502,7 +13501,7 @@ pylv_obj_get_style_pattern_repeat(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_set_style_local_pattern_repeat(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13518,7 +13517,7 @@ pylv_obj_set_style_local_pattern_repeat(pylv_Obj *self, PyObject *args, PyObject
 static PyObject*
 pylv_obj_get_style_pattern_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13532,7 +13531,7 @@ pylv_obj_get_style_pattern_blend_mode(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_set_style_local_pattern_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13562,7 +13561,7 @@ pylv_obj_set_style_local_pattern_recolor(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_pattern_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13576,7 +13575,7 @@ pylv_obj_get_style_pattern_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pattern_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13592,7 +13591,7 @@ pylv_obj_set_style_local_pattern_opa(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_pattern_recolor_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13606,7 +13605,7 @@ pylv_obj_get_style_pattern_recolor_opa(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_set_style_local_pattern_recolor_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13636,7 +13635,7 @@ pylv_obj_set_style_local_pattern_image(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_value_letter_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13650,7 +13649,7 @@ pylv_obj_get_style_value_letter_space(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_set_style_local_value_letter_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13666,7 +13665,7 @@ pylv_obj_set_style_local_value_letter_space(pylv_Obj *self, PyObject *args, PyOb
 static PyObject*
 pylv_obj_get_style_value_line_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13680,7 +13679,7 @@ pylv_obj_get_style_value_line_space(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_value_line_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13696,7 +13695,7 @@ pylv_obj_set_style_local_value_line_space(pylv_Obj *self, PyObject *args, PyObje
 static PyObject*
 pylv_obj_get_style_value_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13710,7 +13709,7 @@ pylv_obj_get_style_value_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_value_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13726,7 +13725,7 @@ pylv_obj_set_style_local_value_blend_mode(pylv_Obj *self, PyObject *args, PyObje
 static PyObject*
 pylv_obj_get_style_value_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13740,7 +13739,7 @@ pylv_obj_get_style_value_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_ofs_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13756,7 +13755,7 @@ pylv_obj_set_style_local_value_ofs_x(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_value_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13770,7 +13769,7 @@ pylv_obj_get_style_value_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_ofs_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13786,7 +13785,7 @@ pylv_obj_set_style_local_value_ofs_y(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_value_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13800,7 +13799,7 @@ pylv_obj_get_style_value_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13830,7 +13829,7 @@ pylv_obj_set_style_local_value_color(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_value_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13844,7 +13843,7 @@ pylv_obj_get_style_value_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13860,7 +13859,7 @@ pylv_obj_set_style_local_value_opa(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_value_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13874,7 +13873,7 @@ pylv_obj_get_style_value_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13890,7 +13889,7 @@ pylv_obj_set_style_local_value_font(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_value_str(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13904,7 +13903,7 @@ pylv_obj_get_style_value_str(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_value_str(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13920,7 +13919,7 @@ pylv_obj_set_style_local_value_str(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_text_letter_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13934,7 +13933,7 @@ pylv_obj_get_style_text_letter_space(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_text_letter_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13950,7 +13949,7 @@ pylv_obj_set_style_local_text_letter_space(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_text_line_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13964,7 +13963,7 @@ pylv_obj_get_style_text_line_space(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_text_line_space(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -13980,7 +13979,7 @@ pylv_obj_set_style_local_text_line_space(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_text_decor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -13994,7 +13993,7 @@ pylv_obj_get_style_text_decor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_text_decor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14010,7 +14009,7 @@ pylv_obj_set_style_local_text_decor(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_text_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14024,7 +14023,7 @@ pylv_obj_get_style_text_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_text_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14082,7 +14081,7 @@ pylv_obj_set_style_local_text_sel_bg_color(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_text_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14096,7 +14095,7 @@ pylv_obj_get_style_text_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_text_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14112,7 +14111,7 @@ pylv_obj_set_style_local_text_opa(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_get_style_text_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14126,7 +14125,7 @@ pylv_obj_get_style_text_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_text_font(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14142,7 +14141,7 @@ pylv_obj_set_style_local_text_font(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_line_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14156,7 +14155,7 @@ pylv_obj_get_style_line_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_line_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14172,7 +14171,7 @@ pylv_obj_set_style_local_line_width(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_line_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14186,7 +14185,7 @@ pylv_obj_get_style_line_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_line_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14202,7 +14201,7 @@ pylv_obj_set_style_local_line_blend_mode(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_line_dash_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14216,7 +14215,7 @@ pylv_obj_get_style_line_dash_width(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_line_dash_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14232,7 +14231,7 @@ pylv_obj_set_style_local_line_dash_width(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_line_dash_gap(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14246,7 +14245,7 @@ pylv_obj_get_style_line_dash_gap(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_line_dash_gap(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14262,7 +14261,7 @@ pylv_obj_set_style_local_line_dash_gap(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_line_rounded(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14276,7 +14275,7 @@ pylv_obj_get_style_line_rounded(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_line_rounded(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14306,7 +14305,7 @@ pylv_obj_set_style_local_line_color(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_style_line_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14320,7 +14319,7 @@ pylv_obj_get_style_line_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_line_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14336,7 +14335,7 @@ pylv_obj_set_style_local_line_opa(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_obj_get_style_image_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14350,7 +14349,7 @@ pylv_obj_get_style_image_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_image_blend_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14380,7 +14379,7 @@ pylv_obj_set_style_local_image_recolor(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_obj_get_style_image_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14394,7 +14393,7 @@ pylv_obj_get_style_image_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_image_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14410,7 +14409,7 @@ pylv_obj_set_style_local_image_opa(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_get_style_image_recolor_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14424,7 +14423,7 @@ pylv_obj_get_style_image_recolor_opa(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_image_recolor_opa(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14440,7 +14439,7 @@ pylv_obj_set_style_local_image_recolor_opa(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14454,7 +14453,7 @@ pylv_obj_get_style_transition_time(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_obj_set_style_local_transition_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14470,7 +14469,7 @@ pylv_obj_set_style_local_transition_time(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_transition_delay(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14484,7 +14483,7 @@ pylv_obj_get_style_transition_delay(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_transition_delay(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14500,7 +14499,7 @@ pylv_obj_set_style_local_transition_delay(pylv_Obj *self, PyObject *args, PyObje
 static PyObject*
 pylv_obj_get_style_transition_prop_1(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14514,7 +14513,7 @@ pylv_obj_get_style_transition_prop_1(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_1(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14530,7 +14529,7 @@ pylv_obj_set_style_local_transition_prop_1(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_prop_2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14544,7 +14543,7 @@ pylv_obj_get_style_transition_prop_2(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14560,7 +14559,7 @@ pylv_obj_set_style_local_transition_prop_2(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_prop_3(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14574,7 +14573,7 @@ pylv_obj_get_style_transition_prop_3(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_3(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14590,7 +14589,7 @@ pylv_obj_set_style_local_transition_prop_3(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_prop_4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14604,7 +14603,7 @@ pylv_obj_get_style_transition_prop_4(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14620,7 +14619,7 @@ pylv_obj_set_style_local_transition_prop_4(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_prop_5(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14634,7 +14633,7 @@ pylv_obj_get_style_transition_prop_5(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_5(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14650,7 +14649,7 @@ pylv_obj_set_style_local_transition_prop_5(pylv_Obj *self, PyObject *args, PyObj
 static PyObject*
 pylv_obj_get_style_transition_prop_6(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14664,7 +14663,7 @@ pylv_obj_get_style_transition_prop_6(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_set_style_local_transition_prop_6(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14694,7 +14693,7 @@ pylv_obj_set_style_local_transition_path(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_get_style_scale_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14708,7 +14707,7 @@ pylv_obj_get_style_scale_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_scale_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14724,7 +14723,7 @@ pylv_obj_set_style_local_scale_width(pylv_Obj *self, PyObject *args, PyObject *k
 static PyObject*
 pylv_obj_get_style_scale_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14738,7 +14737,7 @@ pylv_obj_get_style_scale_border_width(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_obj_set_style_local_scale_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14754,7 +14753,7 @@ pylv_obj_set_style_local_scale_border_width(pylv_Obj *self, PyObject *args, PyOb
 static PyObject*
 pylv_obj_get_style_scale_end_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14768,7 +14767,7 @@ pylv_obj_get_style_scale_end_border_width(pylv_Obj *self, PyObject *args, PyObje
 static PyObject*
 pylv_obj_set_style_local_scale_end_border_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14784,7 +14783,7 @@ pylv_obj_set_style_local_scale_end_border_width(pylv_Obj *self, PyObject *args, 
 static PyObject*
 pylv_obj_get_style_scale_end_line_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -14798,7 +14797,7 @@ pylv_obj_get_style_scale_end_line_width(pylv_Obj *self, PyObject *args, PyObject
 static PyObject*
 pylv_obj_set_style_local_scale_end_line_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14842,7 +14841,7 @@ pylv_obj_set_style_local_scale_end_color(pylv_Obj *self, PyObject *args, PyObjec
 static PyObject*
 pylv_obj_set_style_local_pad_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14858,7 +14857,7 @@ pylv_obj_set_style_local_pad_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14874,7 +14873,7 @@ pylv_obj_set_style_local_pad_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_pad_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14890,7 +14889,7 @@ pylv_obj_set_style_local_pad_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_set_style_local_margin_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14906,7 +14905,7 @@ pylv_obj_set_style_local_margin_all(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_margin_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14922,7 +14921,7 @@ pylv_obj_set_style_local_margin_hor(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_set_style_local_margin_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", "state", "value", NULL};
     unsigned char part;
     unsigned char state;
@@ -14938,7 +14937,7 @@ pylv_obj_set_style_local_margin_ver(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_get_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -14951,7 +14950,7 @@ pylv_obj_get_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_adv_hittest(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -14964,7 +14963,7 @@ pylv_obj_get_adv_hittest(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_click(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -14977,7 +14976,7 @@ pylv_obj_get_click(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -14990,7 +14989,7 @@ pylv_obj_get_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15003,7 +15002,7 @@ pylv_obj_get_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_drag_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15016,7 +15015,7 @@ pylv_obj_get_drag_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_drag_throw(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15029,7 +15028,7 @@ pylv_obj_get_drag_throw(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_drag_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15042,7 +15041,7 @@ pylv_obj_get_drag_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_focus_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15055,7 +15054,7 @@ pylv_obj_get_focus_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_parent_event(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15068,7 +15067,7 @@ pylv_obj_get_parent_event(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_gesture_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15081,7 +15080,7 @@ pylv_obj_get_gesture_parent(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_base_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15094,7 +15093,7 @@ pylv_obj_get_base_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15107,7 +15106,7 @@ pylv_obj_get_protect(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_is_protected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"prot", NULL};
     unsigned char prot;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &prot)) return NULL;
@@ -15121,7 +15120,7 @@ pylv_obj_is_protected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -15198,7 +15197,7 @@ pylv_obj_get_group(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_is_focused(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15211,7 +15210,7 @@ pylv_obj_is_focused(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_focused_obj(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15254,7 +15253,7 @@ pylv_obj_init_draw_line_dsc(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_get_draw_rect_ext_pad_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"part", NULL};
     unsigned char part;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &part)) return NULL;
@@ -15268,7 +15267,7 @@ pylv_obj_get_draw_rect_ext_pad_size(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_obj_fade_in(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"time", "delay", NULL};
     unsigned int time;
     unsigned int delay;
@@ -15283,7 +15282,7 @@ pylv_obj_fade_in(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_fade_out(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"time", "delay", NULL};
     unsigned int time;
     unsigned int delay;
@@ -15298,7 +15297,7 @@ pylv_obj_fade_out(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_origo(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -15315,7 +15314,7 @@ pylv_obj_align_origo(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_origo_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "x_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -15331,7 +15330,7 @@ pylv_obj_align_origo_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_obj_align_origo_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"base", "align", "y_ofs", NULL};
     pylv_Obj * base;
     unsigned char align;
@@ -15714,7 +15713,7 @@ pylv_cont_init(pylv_Cont *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"layout", NULL};
     unsigned char layout;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &layout)) return NULL;
@@ -15728,7 +15727,7 @@ pylv_cont_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_set_fit4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"left", "right", "top", "bottom", NULL};
     unsigned char left;
     unsigned char right;
@@ -15745,7 +15744,7 @@ pylv_cont_set_fit4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_set_fit2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"hor", "ver", NULL};
     unsigned char hor;
     unsigned char ver;
@@ -15760,7 +15759,7 @@ pylv_cont_set_fit2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_set_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"fit", NULL};
     unsigned char fit;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &fit)) return NULL;
@@ -15774,7 +15773,7 @@ pylv_cont_set_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15787,7 +15786,7 @@ pylv_cont_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_get_fit_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15800,7 +15799,7 @@ pylv_cont_get_fit_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_get_fit_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15813,7 +15812,7 @@ pylv_cont_get_fit_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_get_fit_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15826,7 +15825,7 @@ pylv_cont_get_fit_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cont_get_fit_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15904,7 +15903,7 @@ pylv_btn_init(pylv_Btn *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btn_set_checkable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"tgl", NULL};
     int tgl;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &tgl)) return NULL;
@@ -15918,7 +15917,7 @@ pylv_btn_set_checkable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btn_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -15932,7 +15931,7 @@ pylv_btn_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btn_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15945,7 +15944,7 @@ pylv_btn_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btn_get_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -15958,7 +15957,7 @@ pylv_btn_get_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btn_get_checkable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16039,7 +16038,7 @@ pylv_imgbtn_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_imgbtn_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -16053,7 +16052,7 @@ pylv_imgbtn_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_imgbtn_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16133,7 +16132,7 @@ pylv_label_init(pylv_Label *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"text", NULL};
     const char * text;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &text)) return NULL;
@@ -16154,7 +16153,7 @@ pylv_label_set_text_fmt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_text_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"text", NULL};
     const char * text;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &text)) return NULL;
@@ -16168,7 +16167,7 @@ pylv_label_set_text_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_long_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"long_mode", NULL};
     unsigned char long_mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &long_mode)) return NULL;
@@ -16182,7 +16181,7 @@ pylv_label_set_long_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"align", NULL};
     unsigned char align;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &align)) return NULL;
@@ -16196,7 +16195,7 @@ pylv_label_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -16210,7 +16209,7 @@ pylv_label_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_anim_speed(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_speed", NULL};
     unsigned short int anim_speed;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_speed)) return NULL;
@@ -16224,7 +16223,7 @@ pylv_label_set_anim_speed(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_text_sel_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"index", NULL};
     unsigned int index;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &index)) return NULL;
@@ -16238,7 +16237,7 @@ pylv_label_set_text_sel_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_set_text_sel_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"index", NULL};
     unsigned int index;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &index)) return NULL;
@@ -16252,7 +16251,7 @@ pylv_label_set_text_sel_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16265,7 +16264,7 @@ pylv_label_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_long_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16278,7 +16277,7 @@ pylv_label_get_long_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16291,7 +16290,7 @@ pylv_label_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16304,7 +16303,7 @@ pylv_label_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_anim_speed(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16324,7 +16323,7 @@ pylv_label_is_char_under_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_text_sel_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16337,7 +16336,7 @@ pylv_label_get_text_sel_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_get_text_sel_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16357,7 +16356,7 @@ pylv_label_get_style(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_ins_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"pos", "txt", NULL};
     unsigned int pos;
     const char * txt;
@@ -16372,7 +16371,7 @@ pylv_label_ins_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_cut_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"pos", "cnt", NULL};
     unsigned int pos;
     unsigned int cnt;
@@ -16387,7 +16386,7 @@ pylv_label_cut_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_label_refr_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16486,7 +16485,7 @@ pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"autosize_en", NULL};
     int autosize_en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &autosize_en)) return NULL;
@@ -16500,7 +16499,7 @@ pylv_img_set_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_offset_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"x", NULL};
     short int x;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &x)) return NULL;
@@ -16514,7 +16513,7 @@ pylv_img_set_offset_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_offset_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"y", NULL};
     short int y;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &y)) return NULL;
@@ -16528,7 +16527,7 @@ pylv_img_set_offset_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_pivot(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"pivot_x", "pivot_y", NULL};
     short int pivot_x;
     short int pivot_y;
@@ -16543,7 +16542,7 @@ pylv_img_set_pivot(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"angle", NULL};
     short int angle;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &angle)) return NULL;
@@ -16557,7 +16556,7 @@ pylv_img_set_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"zoom", NULL};
     unsigned short int zoom;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &zoom)) return NULL;
@@ -16571,7 +16570,7 @@ pylv_img_set_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_set_antialias(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"antialias", NULL};
     int antialias;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &antialias)) return NULL;
@@ -16592,7 +16591,7 @@ pylv_img_get_src(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_file_name(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16605,7 +16604,7 @@ pylv_img_get_file_name(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16618,7 +16617,7 @@ pylv_img_get_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_offset_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16631,7 +16630,7 @@ pylv_img_get_offset_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_offset_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16644,7 +16643,7 @@ pylv_img_get_offset_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16664,7 +16663,7 @@ pylv_img_get_pivot(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16677,7 +16676,7 @@ pylv_img_get_zoom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_img_get_antialias(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16770,7 +16769,7 @@ pylv_line_set_points(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_line_set_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -16784,7 +16783,7 @@ pylv_line_set_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_line_set_y_invert(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -16798,7 +16797,7 @@ pylv_line_set_y_invert(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_line_get_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16811,7 +16810,7 @@ pylv_line_get_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_line_get_y_invert(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16885,7 +16884,7 @@ pylv_page_init(pylv_Page *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16898,7 +16897,7 @@ pylv_page_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrollable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16913,7 +16912,7 @@ pylv_page_get_scrollable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -16926,7 +16925,7 @@ pylv_page_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"sb_mode", NULL};
     unsigned char sb_mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &sb_mode)) return NULL;
@@ -16940,7 +16939,7 @@ pylv_page_set_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_time", NULL};
     unsigned short int anim_time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
@@ -16954,7 +16953,7 @@ pylv_page_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scroll_propagation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -16968,7 +16967,7 @@ pylv_page_set_scroll_propagation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -16982,7 +16981,7 @@ pylv_page_set_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrollable_fit4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"left", "right", "top", "bottom", NULL};
     unsigned char left;
     unsigned char right;
@@ -16999,7 +16998,7 @@ pylv_page_set_scrollable_fit4(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrollable_fit2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"hor", "ver", NULL};
     unsigned char hor;
     unsigned char ver;
@@ -17014,7 +17013,7 @@ pylv_page_set_scrollable_fit2(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrollable_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"fit", NULL};
     unsigned char fit;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &fit)) return NULL;
@@ -17028,7 +17027,7 @@ pylv_page_set_scrollable_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrl_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", NULL};
     short int w;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &w)) return NULL;
@@ -17042,7 +17041,7 @@ pylv_page_set_scrl_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrl_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"h", NULL};
     short int h;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &h)) return NULL;
@@ -17056,7 +17055,7 @@ pylv_page_set_scrl_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrl_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"layout", NULL};
     unsigned char layout;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &layout)) return NULL;
@@ -17070,7 +17069,7 @@ pylv_page_set_scrl_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17083,7 +17082,7 @@ pylv_page_get_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scroll_propagation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17096,7 +17095,7 @@ pylv_page_get_scroll_propagation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17109,7 +17108,7 @@ pylv_page_get_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17122,7 +17121,7 @@ pylv_page_get_width_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17135,7 +17134,7 @@ pylv_page_get_height_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_width_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"div", "span", NULL};
     unsigned char div;
     unsigned char span;
@@ -17150,7 +17149,7 @@ pylv_page_get_width_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_height_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"div", "span", NULL};
     unsigned char div;
     unsigned char span;
@@ -17165,7 +17164,7 @@ pylv_page_get_height_grid(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17178,7 +17177,7 @@ pylv_page_get_scrl_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17191,7 +17190,7 @@ pylv_page_get_scrl_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17204,7 +17203,7 @@ pylv_page_get_scrl_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_fit_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17217,7 +17216,7 @@ pylv_page_get_scrl_fit_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_fit_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17230,7 +17229,7 @@ pylv_page_get_scrl_fit_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_fit_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17243,7 +17242,7 @@ pylv_page_get_scrl_fit_top(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl_fit_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17256,7 +17255,7 @@ pylv_page_get_scrl_fit_bottom(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_on_edge(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"edge", NULL};
     unsigned char edge;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &edge)) return NULL;
@@ -17270,7 +17269,7 @@ pylv_page_on_edge(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_glue_obj(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"glue", NULL};
     int glue;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &glue)) return NULL;
@@ -17284,7 +17283,7 @@ pylv_page_glue_obj(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_focus(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"obj", "anim_en", NULL};
     pylv_Obj * obj;
     unsigned char anim_en;
@@ -17299,7 +17298,7 @@ pylv_page_focus(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_scroll_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dist", NULL};
     short int dist;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &dist)) return NULL;
@@ -17313,7 +17312,7 @@ pylv_page_scroll_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_scroll_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dist", NULL};
     short int dist;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &dist)) return NULL;
@@ -17327,7 +17326,7 @@ pylv_page_scroll_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_start_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"edge", NULL};
     unsigned char edge;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &edge)) return NULL;
@@ -17341,7 +17340,7 @@ pylv_page_start_edge_flash(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_set_scrlbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"sb_mode", NULL};
     unsigned char sb_mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &sb_mode)) return NULL;
@@ -17355,7 +17354,7 @@ pylv_page_set_scrlbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrlbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17368,7 +17367,7 @@ pylv_page_get_scrlbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_page_get_scrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17475,7 +17474,7 @@ pylv_list_init(pylv_List *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17488,7 +17487,7 @@ pylv_list_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_remove(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"index", NULL};
     unsigned short int index;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &index)) return NULL;
@@ -17502,7 +17501,7 @@ pylv_list_remove(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_focus_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn", NULL};
     pylv_Obj * btn;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &btn)) return NULL;
@@ -17516,7 +17515,7 @@ pylv_list_focus_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"layout", NULL};
     unsigned char layout;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &layout)) return NULL;
@@ -17530,7 +17529,7 @@ pylv_list_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17543,7 +17542,7 @@ pylv_list_get_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_btn_label(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17558,7 +17557,7 @@ pylv_list_get_btn_label(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_btn_img(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17573,7 +17572,7 @@ pylv_list_get_btn_img(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_prev_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"prev_btn", NULL};
     pylv_Obj * prev_btn;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &prev_btn)) return NULL;
@@ -17589,7 +17588,7 @@ pylv_list_get_prev_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_next_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"prev_btn", NULL};
     pylv_Obj * prev_btn;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &prev_btn)) return NULL;
@@ -17605,7 +17604,7 @@ pylv_list_get_next_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_btn_index(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn", NULL};
     pylv_Obj * btn;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &btn)) return NULL;
@@ -17619,7 +17618,7 @@ pylv_list_get_btn_index(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17632,7 +17631,7 @@ pylv_list_get_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_btn_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17647,7 +17646,7 @@ pylv_list_get_btn_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17660,7 +17659,7 @@ pylv_list_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_up(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17673,7 +17672,7 @@ pylv_list_up(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_list_down(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -17794,7 +17793,7 @@ pylv_chart_hide_series(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_div_line_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"hdiv", "vdiv", NULL};
     unsigned char hdiv;
     unsigned char vdiv;
@@ -17809,7 +17808,7 @@ pylv_chart_set_div_line_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_y_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"axis", "ymin", "ymax", NULL};
     unsigned char axis;
     short int ymin;
@@ -17825,7 +17824,7 @@ pylv_chart_set_y_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -17839,7 +17838,7 @@ pylv_chart_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_point_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"point_cnt", NULL};
     unsigned short int point_cnt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &point_cnt)) return NULL;
@@ -17874,7 +17873,7 @@ pylv_chart_set_next(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_update_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"update_mode", NULL};
     unsigned char update_mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &update_mode)) return NULL;
@@ -17888,7 +17887,7 @@ pylv_chart_set_update_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_x_tick_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"major_tick_len", "minor_tick_len", NULL};
     unsigned char major_tick_len;
     unsigned char minor_tick_len;
@@ -17903,7 +17902,7 @@ pylv_chart_set_x_tick_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_y_tick_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"major_tick_len", "minor_tick_len", NULL};
     unsigned char major_tick_len;
     unsigned char minor_tick_len;
@@ -17918,7 +17917,7 @@ pylv_chart_set_y_tick_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_secondary_y_tick_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"major_tick_len", "minor_tick_len", NULL};
     unsigned char major_tick_len;
     unsigned char minor_tick_len;
@@ -17933,7 +17932,7 @@ pylv_chart_set_secondary_y_tick_length(pylv_Obj *self, PyObject *args, PyObject 
 static PyObject*
 pylv_chart_set_x_tick_texts(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"list_of_values", "num_tick_marks", "options", NULL};
     const char * list_of_values;
     unsigned char num_tick_marks;
@@ -17949,7 +17948,7 @@ pylv_chart_set_x_tick_texts(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_secondary_y_tick_texts(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"list_of_values", "num_tick_marks", "options", NULL};
     const char * list_of_values;
     unsigned char num_tick_marks;
@@ -17965,7 +17964,7 @@ pylv_chart_set_secondary_y_tick_texts(pylv_Obj *self, PyObject *args, PyObject *
 static PyObject*
 pylv_chart_set_y_tick_texts(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"list_of_values", "num_tick_marks", "options", NULL};
     const char * list_of_values;
     unsigned char num_tick_marks;
@@ -18016,7 +18015,7 @@ pylv_chart_set_cursor_point(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18029,7 +18028,7 @@ pylv_chart_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_get_point_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18070,7 +18069,7 @@ pylv_chart_get_cursor_point(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_get_nearest_index_from_coord(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"x", NULL};
     short int x;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &x)) return NULL;
@@ -18098,7 +18097,7 @@ pylv_chart_get_y_from_index(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_refresh(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18111,7 +18110,7 @@ pylv_chart_refresh(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_chart_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"ymin", "ymax", NULL};
     short int ymin;
     short int ymax;
@@ -18225,7 +18224,7 @@ pylv_table_init(pylv_Table *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_cell_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", "txt", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18248,7 +18247,7 @@ pylv_table_set_cell_value_fmt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row_cnt", NULL};
     unsigned short int row_cnt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &row_cnt)) return NULL;
@@ -18262,7 +18261,7 @@ pylv_table_set_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"col_cnt", NULL};
     unsigned short int col_cnt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &col_cnt)) return NULL;
@@ -18276,7 +18275,7 @@ pylv_table_set_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"col_id", "w", NULL};
     unsigned short int col_id;
     short int w;
@@ -18291,7 +18290,7 @@ pylv_table_set_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", "align", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18307,7 +18306,7 @@ pylv_table_set_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", "type", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18323,7 +18322,7 @@ pylv_table_set_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", "crop", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18339,7 +18338,7 @@ pylv_table_set_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_set_cell_merge_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", "en", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18355,7 +18354,7 @@ pylv_table_set_cell_merge_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_cell_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18370,7 +18369,7 @@ pylv_table_get_cell_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18383,7 +18382,7 @@ pylv_table_get_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18396,7 +18395,7 @@ pylv_table_get_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"col_id", NULL};
     unsigned short int col_id;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &col_id)) return NULL;
@@ -18410,7 +18409,7 @@ pylv_table_get_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18425,7 +18424,7 @@ pylv_table_get_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18440,7 +18439,7 @@ pylv_table_get_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18455,7 +18454,7 @@ pylv_table_get_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_table_get_cell_merge_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row", "col", NULL};
     unsigned short int row;
     unsigned short int col;
@@ -18551,7 +18550,7 @@ pylv_checkbox_init(pylv_Checkbox *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -18565,7 +18564,7 @@ pylv_checkbox_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_set_text_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -18579,7 +18578,7 @@ pylv_checkbox_set_text_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_set_checked(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"checked", NULL};
     int checked;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &checked)) return NULL;
@@ -18593,7 +18592,7 @@ pylv_checkbox_set_checked(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_set_disabled(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18606,7 +18605,7 @@ pylv_checkbox_set_disabled(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"state", NULL};
     unsigned char state;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &state)) return NULL;
@@ -18620,7 +18619,7 @@ pylv_checkbox_set_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18633,7 +18632,7 @@ pylv_checkbox_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_is_checked(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18646,7 +18645,7 @@ pylv_checkbox_is_checked(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_checkbox_is_inactive(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18723,7 +18722,7 @@ pylv_cpicker_init(pylv_Cpicker *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -18737,7 +18736,7 @@ pylv_cpicker_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_hue(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"hue", NULL};
     unsigned short int hue;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &hue)) return NULL;
@@ -18751,7 +18750,7 @@ pylv_cpicker_set_hue(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_saturation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"saturation", NULL};
     unsigned char saturation;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &saturation)) return NULL;
@@ -18765,7 +18764,7 @@ pylv_cpicker_set_saturation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"val", NULL};
     unsigned char val;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &val)) return NULL;
@@ -18793,7 +18792,7 @@ pylv_cpicker_set_color(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_color_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"mode", NULL};
     unsigned char mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &mode)) return NULL;
@@ -18807,7 +18806,7 @@ pylv_cpicker_set_color_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_set_color_mode_fixed(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"fixed", NULL};
     int fixed;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &fixed)) return NULL;
@@ -18821,7 +18820,7 @@ pylv_cpicker_set_color_mode_fixed(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_cpicker_set_knob_colored(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -18835,7 +18834,7 @@ pylv_cpicker_set_knob_colored(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_get_color_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18848,7 +18847,7 @@ pylv_cpicker_get_color_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_get_color_mode_fixed(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18861,7 +18860,7 @@ pylv_cpicker_get_color_mode_fixed(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_cpicker_get_hue(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18874,7 +18873,7 @@ pylv_cpicker_get_hue(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_get_saturation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18887,7 +18886,7 @@ pylv_cpicker_get_saturation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -18914,7 +18913,7 @@ pylv_cpicker_get_color(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_cpicker_get_knob_colored(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19000,7 +18999,7 @@ pylv_bar_init(pylv_Bar *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"value", "anim", NULL};
     short int value;
     unsigned char anim;
@@ -19015,7 +19014,7 @@ pylv_bar_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_start_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"start_value", "anim", NULL};
     short int start_value;
     unsigned char anim;
@@ -19030,7 +19029,7 @@ pylv_bar_set_start_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"min", "max", NULL};
     short int min;
     short int max;
@@ -19045,7 +19044,7 @@ pylv_bar_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -19059,7 +19058,7 @@ pylv_bar_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_time", NULL};
     unsigned short int anim_time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
@@ -19073,7 +19072,7 @@ pylv_bar_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19086,7 +19085,7 @@ pylv_bar_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_start_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19099,7 +19098,7 @@ pylv_bar_get_start_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19112,7 +19111,7 @@ pylv_bar_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19125,7 +19124,7 @@ pylv_bar_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19138,7 +19137,7 @@ pylv_bar_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19151,7 +19150,7 @@ pylv_bar_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_set_sym(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -19165,7 +19164,7 @@ pylv_bar_set_sym(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_bar_get_sym(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19247,7 +19246,7 @@ pylv_slider_init(pylv_Slider *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_set_left_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"left_value", "anim", NULL};
     short int left_value;
     unsigned char anim;
@@ -19262,7 +19261,7 @@ pylv_slider_set_left_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -19276,7 +19275,7 @@ pylv_slider_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19289,7 +19288,7 @@ pylv_slider_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_get_left_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19302,7 +19301,7 @@ pylv_slider_get_left_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_is_dragged(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19315,7 +19314,7 @@ pylv_slider_is_dragged(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_slider_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19390,7 +19389,7 @@ pylv_led_init(pylv_Led *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_led_set_bright(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"bright", NULL};
     unsigned char bright;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &bright)) return NULL;
@@ -19404,7 +19403,7 @@ pylv_led_set_bright(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_led_on(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19417,7 +19416,7 @@ pylv_led_on(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_led_off(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19430,7 +19429,7 @@ pylv_led_off(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_led_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19443,7 +19442,7 @@ pylv_led_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_led_get_bright(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19517,7 +19516,7 @@ pylv_btnmatrix_init(pylv_Btnmatrix *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"map", NULL};
     char map;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "c", kwlist , &map)) return NULL;
@@ -19531,7 +19530,7 @@ pylv_btnmatrix_set_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_ctrl_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"ctrl_map", NULL};
     unsigned short int ctrl_map;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl_map)) return NULL;
@@ -19545,7 +19544,7 @@ pylv_btnmatrix_set_ctrl_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"id", NULL};
     unsigned short int id;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &id)) return NULL;
@@ -19559,7 +19558,7 @@ pylv_btnmatrix_set_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -19573,7 +19572,7 @@ pylv_btnmatrix_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_id", "ctrl", NULL};
     unsigned short int btn_id;
     unsigned short int ctrl;
@@ -19588,7 +19587,7 @@ pylv_btnmatrix_set_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_clear_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_id", "ctrl", NULL};
     unsigned short int btn_id;
     unsigned short int ctrl;
@@ -19603,7 +19602,7 @@ pylv_btnmatrix_clear_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"ctrl", NULL};
     unsigned short int ctrl;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl)) return NULL;
@@ -19617,7 +19616,7 @@ pylv_btnmatrix_set_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_clear_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"ctrl", NULL};
     unsigned short int ctrl;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl)) return NULL;
@@ -19631,7 +19630,7 @@ pylv_btnmatrix_clear_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_btnmatrix_set_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_id", "width", NULL};
     unsigned short int btn_id;
     unsigned char width;
@@ -19646,7 +19645,7 @@ pylv_btnmatrix_set_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"one_chk", NULL};
     int one_chk;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &one_chk)) return NULL;
@@ -19660,7 +19659,7 @@ pylv_btnmatrix_set_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"align", NULL};
     unsigned char align;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &align)) return NULL;
@@ -19681,7 +19680,7 @@ pylv_btnmatrix_get_map_array(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19694,7 +19693,7 @@ pylv_btnmatrix_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19707,7 +19706,7 @@ pylv_btnmatrix_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19720,7 +19719,7 @@ pylv_btnmatrix_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_btnmatrix_get_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19733,7 +19732,7 @@ pylv_btnmatrix_get_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_id", NULL};
     unsigned short int btn_id;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &btn_id)) return NULL;
@@ -19747,7 +19746,7 @@ pylv_btnmatrix_get_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_id", "ctrl", NULL};
     unsigned short int btn_id;
     unsigned short int ctrl;
@@ -19762,7 +19761,7 @@ pylv_btnmatrix_get_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19775,7 +19774,7 @@ pylv_btnmatrix_get_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_btnmatrix_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19864,7 +19863,7 @@ pylv_keyboard_init(pylv_Keyboard *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_set_textarea(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"ta", NULL};
     pylv_Obj * ta;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &ta)) return NULL;
@@ -19878,7 +19877,7 @@ pylv_keyboard_set_textarea(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_set_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"mode", NULL};
     unsigned char mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &mode)) return NULL;
@@ -19892,7 +19891,7 @@ pylv_keyboard_set_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_set_cursor_manage(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -19906,7 +19905,7 @@ pylv_keyboard_set_cursor_manage(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_set_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"mode", "map", NULL};
     unsigned char mode;
     char map;
@@ -19921,7 +19920,7 @@ pylv_keyboard_set_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_set_ctrl_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"mode", "ctrl_map", NULL};
     unsigned char mode;
     unsigned short int ctrl_map;
@@ -19936,7 +19935,7 @@ pylv_keyboard_set_ctrl_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_get_textarea(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19951,7 +19950,7 @@ pylv_keyboard_get_textarea(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_get_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19964,7 +19963,7 @@ pylv_keyboard_get_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_get_cursor_manage(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -19977,7 +19976,7 @@ pylv_keyboard_get_cursor_manage(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_keyboard_def_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"event", NULL};
     unsigned char event;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &event)) return NULL;
@@ -20056,7 +20055,7 @@ pylv_dropdown_init(pylv_Dropdown *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -20070,7 +20069,7 @@ pylv_dropdown_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_clear_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20083,7 +20082,7 @@ pylv_dropdown_clear_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"options", NULL};
     const char * options;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &options)) return NULL;
@@ -20097,7 +20096,7 @@ pylv_dropdown_set_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_options_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"options", NULL};
     const char * options;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &options)) return NULL;
@@ -20111,7 +20110,7 @@ pylv_dropdown_set_options_static(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_add_option(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"option", "pos", NULL};
     const char * option;
     unsigned int pos;
@@ -20126,7 +20125,7 @@ pylv_dropdown_add_option(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"sel_opt", NULL};
     unsigned short int sel_opt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &sel_opt)) return NULL;
@@ -20140,7 +20139,7 @@ pylv_dropdown_set_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dir", NULL};
     unsigned char dir;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &dir)) return NULL;
@@ -20154,7 +20153,7 @@ pylv_dropdown_set_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_max_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"h", NULL};
     short int h;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &h)) return NULL;
@@ -20168,7 +20167,7 @@ pylv_dropdown_set_max_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_symbol(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"symbol", NULL};
     const char * symbol;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &symbol)) return NULL;
@@ -20182,7 +20181,7 @@ pylv_dropdown_set_symbol(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_show_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"show", NULL};
     int show;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &show)) return NULL;
@@ -20196,7 +20195,7 @@ pylv_dropdown_set_show_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20209,7 +20208,7 @@ pylv_dropdown_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20222,7 +20221,7 @@ pylv_dropdown_get_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20235,7 +20234,7 @@ pylv_dropdown_get_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_option_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20255,7 +20254,7 @@ pylv_dropdown_get_selected_str(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_max_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20268,7 +20267,7 @@ pylv_dropdown_get_max_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_symbol(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20281,7 +20280,7 @@ pylv_dropdown_get_symbol(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20294,7 +20293,7 @@ pylv_dropdown_get_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_show_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20307,7 +20306,7 @@ pylv_dropdown_get_show_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_open(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20320,7 +20319,7 @@ pylv_dropdown_open(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20333,7 +20332,7 @@ pylv_dropdown_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_set_draw_arrow(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -20347,7 +20346,7 @@ pylv_dropdown_set_draw_arrow(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_dropdown_get_draw_arrow(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20439,7 +20438,7 @@ pylv_roller_init(pylv_Roller *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_set_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"options", "mode", NULL};
     const char * options;
     unsigned char mode;
@@ -20454,7 +20453,7 @@ pylv_roller_set_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"align", NULL};
     unsigned char align;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &align)) return NULL;
@@ -20468,7 +20467,7 @@ pylv_roller_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_set_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"sel_opt", "anim", NULL};
     unsigned short int sel_opt;
     unsigned char anim;
@@ -20483,7 +20482,7 @@ pylv_roller_set_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_set_visible_row_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"row_cnt", NULL};
     unsigned char row_cnt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &row_cnt)) return NULL;
@@ -20497,7 +20496,7 @@ pylv_roller_set_visible_row_count(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_roller_set_auto_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"auto_fit", NULL};
     int auto_fit;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &auto_fit)) return NULL;
@@ -20511,7 +20510,7 @@ pylv_roller_set_auto_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_get_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20524,7 +20523,7 @@ pylv_roller_get_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_get_option_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20544,7 +20543,7 @@ pylv_roller_get_selected_str(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20557,7 +20556,7 @@ pylv_roller_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_get_auto_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20570,7 +20569,7 @@ pylv_roller_get_auto_fit(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_get_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20583,7 +20582,7 @@ pylv_roller_get_options(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_roller_set_fix_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", NULL};
     short int w;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &w)) return NULL;
@@ -20665,7 +20664,7 @@ pylv_textarea_init(pylv_Textarea *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_add_char(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"c", NULL};
     unsigned int c;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &c)) return NULL;
@@ -20679,7 +20678,7 @@ pylv_textarea_add_char(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_add_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -20693,7 +20692,7 @@ pylv_textarea_add_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_del_char(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20706,7 +20705,7 @@ pylv_textarea_del_char(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_del_char_forward(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20719,7 +20718,7 @@ pylv_textarea_del_char_forward(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -20733,7 +20732,7 @@ pylv_textarea_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_placeholder_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -20747,7 +20746,7 @@ pylv_textarea_set_placeholder_text(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_textarea_set_cursor_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"pos", NULL};
     int pos;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &pos)) return NULL;
@@ -20761,7 +20760,7 @@ pylv_textarea_set_cursor_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_cursor_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"hide", NULL};
     int hide;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &hide)) return NULL;
@@ -20775,7 +20774,7 @@ pylv_textarea_set_cursor_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_cursor_click_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -20789,7 +20788,7 @@ pylv_textarea_set_cursor_click_pos(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_textarea_set_pwd_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -20803,7 +20802,7 @@ pylv_textarea_set_pwd_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_one_line(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -20817,7 +20816,7 @@ pylv_textarea_set_one_line(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_text_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"align", NULL};
     unsigned char align;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &align)) return NULL;
@@ -20831,7 +20830,7 @@ pylv_textarea_set_text_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_accepted_chars(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"list", NULL};
     const char * list;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &list)) return NULL;
@@ -20845,7 +20844,7 @@ pylv_textarea_set_accepted_chars(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_max_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"num", NULL};
     unsigned int num;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &num)) return NULL;
@@ -20859,7 +20858,7 @@ pylv_textarea_set_max_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_insert_replace(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -20873,7 +20872,7 @@ pylv_textarea_set_insert_replace(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_text_sel(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -20887,7 +20886,7 @@ pylv_textarea_set_text_sel(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_pwd_show_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"time", NULL};
     unsigned short int time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &time)) return NULL;
@@ -20901,7 +20900,7 @@ pylv_textarea_set_pwd_show_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_set_cursor_blink_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"time", NULL};
     unsigned short int time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &time)) return NULL;
@@ -20915,7 +20914,7 @@ pylv_textarea_set_cursor_blink_time(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_textarea_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20928,7 +20927,7 @@ pylv_textarea_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_placeholder_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20941,7 +20940,7 @@ pylv_textarea_get_placeholder_text(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_textarea_get_label(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20956,7 +20955,7 @@ pylv_textarea_get_label(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_cursor_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20969,7 +20968,7 @@ pylv_textarea_get_cursor_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_cursor_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20982,7 +20981,7 @@ pylv_textarea_get_cursor_hidden(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_cursor_click_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -20995,7 +20994,7 @@ pylv_textarea_get_cursor_click_pos(pylv_Obj *self, PyObject *args, PyObject *kwd
 static PyObject*
 pylv_textarea_get_pwd_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21008,7 +21007,7 @@ pylv_textarea_get_pwd_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_one_line(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21021,7 +21020,7 @@ pylv_textarea_get_one_line(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_accepted_chars(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21034,7 +21033,7 @@ pylv_textarea_get_accepted_chars(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_max_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21047,7 +21046,7 @@ pylv_textarea_get_max_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_text_is_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21060,7 +21059,7 @@ pylv_textarea_text_is_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_text_sel_en(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21073,7 +21072,7 @@ pylv_textarea_get_text_sel_en(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_pwd_show_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21086,7 +21085,7 @@ pylv_textarea_get_pwd_show_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_get_cursor_blink_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21099,7 +21098,7 @@ pylv_textarea_get_cursor_blink_time(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_textarea_clear_selection(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21112,7 +21111,7 @@ pylv_textarea_clear_selection(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_cursor_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21125,7 +21124,7 @@ pylv_textarea_cursor_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_cursor_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21138,7 +21137,7 @@ pylv_textarea_cursor_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_cursor_down(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21151,7 +21150,7 @@ pylv_textarea_cursor_down(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_textarea_cursor_up(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21441,7 +21440,7 @@ pylv_win_init(pylv_Win *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_clean(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21468,7 +21467,7 @@ pylv_win_add_btn_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_close_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"event", NULL};
     unsigned char event;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &event)) return NULL;
@@ -21482,7 +21481,7 @@ pylv_win_close_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_title(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"title", NULL};
     const char * title;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &title)) return NULL;
@@ -21496,7 +21495,7 @@ pylv_win_set_title(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_header_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"size", NULL};
     short int size;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &size)) return NULL;
@@ -21510,7 +21509,7 @@ pylv_win_set_header_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"width", NULL};
     short int width;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &width)) return NULL;
@@ -21524,7 +21523,7 @@ pylv_win_set_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_content_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"w", "h", NULL};
     short int w;
     short int h;
@@ -21539,7 +21538,7 @@ pylv_win_set_content_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"layout", NULL};
     unsigned char layout;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &layout)) return NULL;
@@ -21553,7 +21552,7 @@ pylv_win_set_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"sb_mode", NULL};
     unsigned char sb_mode;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &sb_mode)) return NULL;
@@ -21567,7 +21566,7 @@ pylv_win_set_scrollbar_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_time", NULL};
     unsigned short int anim_time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
@@ -21581,7 +21580,7 @@ pylv_win_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_set_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -21595,7 +21594,7 @@ pylv_win_set_drag(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_title_set_alignment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"alignment", NULL};
     unsigned char alignment;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &alignment)) return NULL;
@@ -21609,7 +21608,7 @@ pylv_win_title_set_alignment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_title(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21622,7 +21621,7 @@ pylv_win_get_title(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_content(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21637,7 +21636,7 @@ pylv_win_get_content(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_header_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21650,7 +21649,7 @@ pylv_win_get_header_height(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21663,7 +21662,7 @@ pylv_win_get_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_from_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21678,7 +21677,7 @@ pylv_win_get_from_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21691,7 +21690,7 @@ pylv_win_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_sb_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21704,7 +21703,7 @@ pylv_win_get_sb_mode(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21717,7 +21716,7 @@ pylv_win_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_get_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21730,7 +21729,7 @@ pylv_win_get_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_title_get_alignment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21743,7 +21742,7 @@ pylv_win_title_get_alignment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_focus(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"obj", "anim_en", NULL};
     pylv_Obj * obj;
     unsigned char anim_en;
@@ -21758,7 +21757,7 @@ pylv_win_focus(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_scroll_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dist", NULL};
     short int dist;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &dist)) return NULL;
@@ -21772,7 +21771,7 @@ pylv_win_scroll_hor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_win_scroll_ver(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dist", NULL};
     short int dist;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &dist)) return NULL;
@@ -21876,7 +21875,7 @@ pylv_tabview_init(pylv_Tabview *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_add_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"name", NULL};
     const char * name;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &name)) return NULL;
@@ -21892,7 +21891,7 @@ pylv_tabview_add_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_clean_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21905,7 +21904,7 @@ pylv_tabview_clean_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_set_tab_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"id", "anim", NULL};
     unsigned short int id;
     unsigned char anim;
@@ -21920,14 +21919,22 @@ pylv_tabview_set_tab_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_set_tab_name(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_tabview_set_tab_name: Parameter type not found >char*< ");
-    return NULL;
+    if (!is_alive(self)) return NULL;
+    static char *kwlist[] = {"id", "name", NULL};
+    unsigned short int id;
+    const char * name;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Hs", kwlist , &id, &name)) return NULL;
+
+    LVGL_LOCK         
+    lv_tabview_set_tab_name(self->ref, id, name);
+    LVGL_UNLOCK
+    Py_RETURN_NONE;
 }
 
 static PyObject*
 pylv_tabview_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_time", NULL};
     unsigned short int anim_time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
@@ -21941,7 +21948,7 @@ pylv_tabview_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_set_btns_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btns_pos", NULL};
     unsigned char btns_pos;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &btns_pos)) return NULL;
@@ -21955,7 +21962,7 @@ pylv_tabview_set_btns_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_get_tab_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21968,7 +21975,7 @@ pylv_tabview_get_tab_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_get_tab_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -21981,7 +21988,7 @@ pylv_tabview_get_tab_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_get_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"id", NULL};
     unsigned short int id;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &id)) return NULL;
@@ -21997,7 +22004,7 @@ pylv_tabview_get_tab(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22010,7 +22017,7 @@ pylv_tabview_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_get_btns_pos(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22025,7 +22032,7 @@ static PyMethodDef pylv_tabview_methods[] = {
     {"add_tab", (PyCFunction) pylv_tabview_add_tab, METH_VARARGS | METH_KEYWORDS, "lv_obj_t *lv_tabview_add_tab(lv_obj_t *tabview, const char *name)"},
     {"clean_tab", (PyCFunction) pylv_tabview_clean_tab, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_clean_tab(lv_obj_t *tab)"},
     {"set_tab_act", (PyCFunction) pylv_tabview_set_tab_act, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_act(lv_obj_t *tabview, uint16_t id, lv_anim_enable_t anim)"},
-    {"set_tab_name", (PyCFunction) pylv_tabview_set_tab_name, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_name(lv_obj_t *tabview, uint16_t id, char *name)"},
+    {"set_tab_name", (PyCFunction) pylv_tabview_set_tab_name, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_name(lv_obj_t *tabview, uint16_t id, const char *name)"},
     {"set_anim_time", (PyCFunction) pylv_tabview_set_anim_time, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_anim_time(lv_obj_t *tabview, uint16_t anim_time)"},
     {"set_btns_pos", (PyCFunction) pylv_tabview_set_btns_pos, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_btns_pos(lv_obj_t *tabview, lv_tabview_btns_pos_t btns_pos)"},
     {"get_tab_act", (PyCFunction) pylv_tabview_get_tab_act, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_tabview_get_tab_act(const lv_obj_t *tabview)"},
@@ -22090,7 +22097,7 @@ pylv_tileview_init(pylv_Tileview *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tileview_add_element(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"element", NULL};
     pylv_Obj * element;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist , &pylv_obj_Type, &element)) return NULL;
@@ -22111,7 +22118,7 @@ pylv_tileview_set_valid_positions(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_tileview_set_tile_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"x", "y", "anim", NULL};
     short int x;
     short int y;
@@ -22194,7 +22201,7 @@ pylv_msgbox_init(pylv_Msgbox *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_add_btns(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"btn_mapaction", NULL};
     char btn_mapaction;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "c", kwlist , &btn_mapaction)) return NULL;
@@ -22208,7 +22215,7 @@ pylv_msgbox_add_btns(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"txt", NULL};
     const char * txt;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
@@ -22229,7 +22236,7 @@ pylv_msgbox_set_text_fmt(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim_time", NULL};
     unsigned short int anim_time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
@@ -22243,7 +22250,7 @@ pylv_msgbox_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_start_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"delay", NULL};
     unsigned short int delay;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &delay)) return NULL;
@@ -22257,7 +22264,7 @@ pylv_msgbox_start_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_stop_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22270,7 +22277,7 @@ pylv_msgbox_stop_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"en", NULL};
     int en;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
@@ -22284,7 +22291,7 @@ pylv_msgbox_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22297,7 +22304,7 @@ pylv_msgbox_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22310,7 +22317,7 @@ pylv_msgbox_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22323,7 +22330,7 @@ pylv_msgbox_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22336,7 +22343,7 @@ pylv_msgbox_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22349,7 +22356,7 @@ pylv_msgbox_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_msgbox_get_btnmatrix(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22513,7 +22520,7 @@ pylv_linemeter_init(pylv_Linemeter *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"value", NULL};
     int value;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &value)) return NULL;
@@ -22527,7 +22534,7 @@ pylv_linemeter_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"min", "max", NULL};
     int min;
     int max;
@@ -22542,7 +22549,7 @@ pylv_linemeter_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_set_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"angle", "line_cnt", NULL};
     unsigned short int angle;
     unsigned short int line_cnt;
@@ -22557,7 +22564,7 @@ pylv_linemeter_set_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_set_angle_offset(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"angle", NULL};
     unsigned short int angle;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &angle)) return NULL;
@@ -22571,7 +22578,7 @@ pylv_linemeter_set_angle_offset(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_set_mirror(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"mirror", NULL};
     int mirror;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &mirror)) return NULL;
@@ -22585,7 +22592,7 @@ pylv_linemeter_set_mirror(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22598,7 +22605,7 @@ pylv_linemeter_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22611,7 +22618,7 @@ pylv_linemeter_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22624,7 +22631,7 @@ pylv_linemeter_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_line_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22637,7 +22644,7 @@ pylv_linemeter_get_line_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_scale_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22650,7 +22657,7 @@ pylv_linemeter_get_scale_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_angle_offset(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22670,7 +22677,7 @@ pylv_linemeter_draw_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_linemeter_get_mirror(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22759,7 +22766,7 @@ pylv_gauge_set_needle_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"needle_id", "value", NULL};
     unsigned char needle_id;
     int value;
@@ -22774,7 +22781,7 @@ pylv_gauge_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_set_critical_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"value", NULL};
     int value;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &value)) return NULL;
@@ -22788,7 +22795,7 @@ pylv_gauge_set_critical_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_set_scale(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"angle", "line_cnt", "label_cnt", NULL};
     unsigned short int angle;
     unsigned char line_cnt;
@@ -22818,7 +22825,7 @@ pylv_gauge_set_formatter_cb(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"needle", NULL};
     unsigned char needle;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &needle)) return NULL;
@@ -22832,7 +22839,7 @@ pylv_gauge_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_get_needle_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22845,7 +22852,7 @@ pylv_gauge_get_needle_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_get_critical_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22858,7 +22865,7 @@ pylv_gauge_get_critical_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_get_label_count(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22878,7 +22885,7 @@ pylv_gauge_get_needle_img(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_gauge_get_needle_img_pivot_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22891,7 +22898,7 @@ pylv_gauge_get_needle_img_pivot_x(pylv_Obj *self, PyObject *args, PyObject *kwds
 static PyObject*
 pylv_gauge_get_needle_img_pivot_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -22973,7 +22980,7 @@ pylv_switch_init(pylv_Switch *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_switch_on(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim", NULL};
     unsigned char anim;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &anim)) return NULL;
@@ -22987,7 +22994,7 @@ pylv_switch_on(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_switch_off(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim", NULL};
     unsigned char anim;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &anim)) return NULL;
@@ -23001,7 +23008,7 @@ pylv_switch_off(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_switch_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"anim", NULL};
     unsigned char anim;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &anim)) return NULL;
@@ -23015,7 +23022,7 @@ pylv_switch_toggle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_switch_get_state(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23088,7 +23095,7 @@ pylv_arc_init(pylv_Arc *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_start_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"start", NULL};
     unsigned short int start;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &start)) return NULL;
@@ -23102,7 +23109,7 @@ pylv_arc_set_start_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_end_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"end", NULL};
     unsigned short int end;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &end)) return NULL;
@@ -23116,7 +23123,7 @@ pylv_arc_set_end_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_angles(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"start", "end", NULL};
     unsigned short int start;
     unsigned short int end;
@@ -23131,7 +23138,7 @@ pylv_arc_set_angles(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_bg_start_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"start", NULL};
     unsigned short int start;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &start)) return NULL;
@@ -23145,7 +23152,7 @@ pylv_arc_set_bg_start_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_bg_end_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"end", NULL};
     unsigned short int end;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &end)) return NULL;
@@ -23159,7 +23166,7 @@ pylv_arc_set_bg_end_angle(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_bg_angles(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"start", "end", NULL};
     unsigned short int start;
     unsigned short int end;
@@ -23174,7 +23181,7 @@ pylv_arc_set_bg_angles(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_rotation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"rotation_angle", NULL};
     unsigned short int rotation_angle;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &rotation_angle)) return NULL;
@@ -23188,7 +23195,7 @@ pylv_arc_set_rotation(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -23202,7 +23209,7 @@ pylv_arc_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"value", NULL};
     short int value;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &value)) return NULL;
@@ -23216,7 +23223,7 @@ pylv_arc_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"min", "max", NULL};
     short int min;
     short int max;
@@ -23231,7 +23238,7 @@ pylv_arc_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_chg_rate(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"threshold", NULL};
     unsigned short int threshold;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &threshold)) return NULL;
@@ -23245,7 +23252,7 @@ pylv_arc_set_chg_rate(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_set_adjustable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"adjustable", NULL};
     int adjustable;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &adjustable)) return NULL;
@@ -23259,7 +23266,7 @@ pylv_arc_set_adjustable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_angle_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23272,7 +23279,7 @@ pylv_arc_get_angle_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_angle_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23285,7 +23292,7 @@ pylv_arc_get_angle_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_bg_angle_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23298,7 +23305,7 @@ pylv_arc_get_bg_angle_start(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_bg_angle_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23311,7 +23318,7 @@ pylv_arc_get_bg_angle_end(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23324,7 +23331,7 @@ pylv_arc_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23337,7 +23344,7 @@ pylv_arc_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23350,7 +23357,7 @@ pylv_arc_get_min_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23363,7 +23370,7 @@ pylv_arc_get_max_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_is_dragged(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23376,7 +23383,7 @@ pylv_arc_is_dragged(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_arc_get_adjustable(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23467,7 +23474,7 @@ pylv_spinner_init(pylv_Spinner *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_set_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"deg", NULL};
     short int deg;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &deg)) return NULL;
@@ -23481,7 +23488,7 @@ pylv_spinner_set_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_set_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"time", NULL};
     unsigned short int time;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &time)) return NULL;
@@ -23495,7 +23502,7 @@ pylv_spinner_set_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"type", NULL};
     unsigned char type;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
@@ -23509,7 +23516,7 @@ pylv_spinner_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_set_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"dir", NULL};
     unsigned char dir;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &dir)) return NULL;
@@ -23523,7 +23530,7 @@ pylv_spinner_set_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_get_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23536,7 +23543,7 @@ pylv_spinner_get_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_get_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23549,7 +23556,7 @@ pylv_spinner_get_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23562,7 +23569,7 @@ pylv_spinner_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinner_get_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23702,7 +23709,7 @@ pylv_calendar_get_highlighted_dates(pylv_Obj *self, PyObject *args, PyObject *kw
 static PyObject*
 pylv_calendar_get_highlighted_dates_num(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23797,7 +23804,7 @@ pylv_spinbox_init(pylv_Spinbox *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_rollover(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"b", NULL};
     int b;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &b)) return NULL;
@@ -23811,7 +23818,7 @@ pylv_spinbox_set_rollover(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"i", NULL};
     int i;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &i)) return NULL;
@@ -23825,7 +23832,7 @@ pylv_spinbox_set_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_digit_format(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"digit_count", "separator_position", NULL};
     unsigned char digit_count;
     unsigned char separator_position;
@@ -23840,7 +23847,7 @@ pylv_spinbox_set_digit_format(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_step(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"step", NULL};
     unsigned int step;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist , &step)) return NULL;
@@ -23854,7 +23861,7 @@ pylv_spinbox_set_step(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"range_min", "range_max", NULL};
     int range_min;
     int range_max;
@@ -23869,7 +23876,7 @@ pylv_spinbox_set_range(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_set_padding_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {"padding", NULL};
     unsigned char padding;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &padding)) return NULL;
@@ -23883,7 +23890,7 @@ pylv_spinbox_set_padding_left(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_get_rollover(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23896,7 +23903,7 @@ pylv_spinbox_get_rollover(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23909,7 +23916,7 @@ pylv_spinbox_get_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_get_step(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23922,7 +23929,7 @@ pylv_spinbox_get_step(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_step_next(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23935,7 +23942,7 @@ pylv_spinbox_step_next(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_step_prev(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23948,7 +23955,7 @@ pylv_spinbox_step_prev(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_increment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -23961,7 +23968,7 @@ pylv_spinbox_increment(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_spinbox_decrement(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (check_alive(self)) return NULL;
+    if (!is_alive(self)) return NULL;
     static char *kwlist[] = {NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
 
@@ -24005,12 +24012,9 @@ static PyTypeObject pylv_spinbox_Type = {
 
 
 
-
-
 /****************************************************************
  * Miscellaneous functions                                      *
  ****************************************************************/
-
 static PyObject *
 pylv_scr_act(PyObject *self, PyObject *args) {
     lv_obj_t *scr;
@@ -24032,7 +24036,6 @@ pylv_scr_load(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
-
 static PyObject *
 poll(PyObject *self, PyObject *args) {
     LVGL_LOCK
@@ -24043,6 +24046,71 @@ poll(PyObject *self, PyObject *args) {
     Py_RETURN_NONE;
 }
 
+static PyObject *
+pylv_tick_inc(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"tick_period", NULL};
+    uint32_t tick_period;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist, &tick_period)) return NULL;
+
+    LVGL_LOCK
+    lv_tick_inc(tick_period);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Create a task
+static PyObject *
+pylv_task_create(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"task_xcb", "period", "prio", "user_data", NULL};
+    pylv_Obj *task_xcb, *user_data = NULL;
+    uint32_t period, prio;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!IIO", kwlist, &pylv_obj_Type, &task_xcb, &period, &prio, &user_data)) return NULL;
+    LVGL_LOCK
+    lv_task_create(task_xcb, period, prio, user_data);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Delete a task
+static PyObject *
+pylv_task_del(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"task", NULL};
+    pylv_Obj *task = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &task)) return NULL;
+    if (task == NULL) return NULL;
+
+    LVGL_LOCK
+    lv_task_del(task);
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pylv_task_handler(PyObject *self, PyObject *args) {
+    LVGL_LOCK
+    lv_task_handler();
+    LVGL_UNLOCK
+
+    Py_RETURN_NONE;
+}
+
+// Returns the inactive time for the spec
+// @parm disp is optional and can be None
+static PyObject *
+pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"disp", NULL};
+    pylv_Obj *disp = NULL;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &disp)) return NULL;
+
+    LVGL_LOCK
+    uint32_t inactive_time = lv_disp_get_inactive_time(disp);
+    LVGL_UNLOCK
+
+    return PyLong_FromLong(inactive_time);
+}
 
 /* TODO: all the framebuffer display driver stuff could be separated (i.e. do not default to it but allow user to register custom frame buffer driver) */
 
@@ -24088,8 +24156,6 @@ static void init_display_driver() {
     lv_disp_drv_register(&display_driver);
 }
 
-static lv_indev_t * indev_mouse;
-
 // Initialize pointing device
 static lv_indev_t *init_pointing_device() {
 	lv_indev_drv_t indev_drv;
@@ -24097,14 +24163,12 @@ static lv_indev_t *init_pointing_device() {
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
 #ifdef COMPILE_FOR_SDL
-    printf("Connecting mouse_read to LVGL\n");
 	indev_drv.read_cb = mouse_read;
 #else
 	indev_drv.read_cb = evdev_read;
 #endif
 	return lv_indev_drv_register(&indev_drv);
 }
-
 
 /****************************************************************
  *  Module global stuff                                         *
@@ -24115,8 +24179,11 @@ static PyMethodDef lvglMethods[] = {
     {"scr_act",  pylv_scr_act, METH_NOARGS, NULL},
     {"scr_load", (PyCFunction)pylv_scr_load, METH_VARARGS | METH_KEYWORDS, NULL},
     {"poll", poll, METH_NOARGS, NULL},
-//    {"send_mouse_event", (PyCFunction)send_mouse_event, METH_VARARGS | METH_KEYWORDS, NULL},
-//    {"report_style_mod", (PyCFunction)report_style_mod, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"tick_inc", (PyCFunction)pylv_tick_inc, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"task_handler", pylv_task_handler, METH_NOARGS, NULL},
+    {"task_create", (PyCFunction)pylv_task_create,  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"task_del", (PyCFunction)pylv_task_del,  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"disp_get_inactive_time", (PyCFunction)pylv_disp_get_inactive_time, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -25044,7 +25111,7 @@ PyInit_lvgl(void) {
 #endif
 
     init_display_driver();
-    indev_mouse = init_pointing_device();
+    init_pointing_device();
 
     return module;
     
