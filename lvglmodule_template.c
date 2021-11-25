@@ -1100,8 +1100,6 @@ static void init_display_driver() {
     lv_disp_drv_register(&display_driver);
 }
 
-static lv_indev_t * indev_mouse;
-
 // Initialize pointing device
 static lv_indev_t *init_pointing_device() {
 	lv_indev_drv_t indev_drv;
@@ -1216,7 +1214,7 @@ PyInit_lvgl(void) {
 #endif
 
     init_display_driver();
-    indev_mouse = init_pointing_device();
+    init_pointing_device();
 
     printf("blah");
     return module;
