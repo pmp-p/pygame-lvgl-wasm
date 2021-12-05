@@ -20,7 +20,7 @@ from distutils.core import setup, Extension
 
 sources = ['lvglmodule.c']
 # LVGL files
-for path in 'lv_core', 'lv_draw', 'lv_hal', 'lv_misc', 'lv_widgets', 'lv_themes', 'lv_font':
+for path in 'lv_core', 'lv_draw', 'lv_font', 'lv_hal', 'lv_misc', 'lv_themes', 'lv_widgets':
     sources.extend(glob.glob('lvgl/src/' + path + '/*.c'))
 # lv_driver files
 for path in 'display', 'indev':
