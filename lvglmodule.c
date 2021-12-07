@@ -2,6 +2,7 @@
 #include "Python.h"
 #include "structmember.h"
 #include "lvgl/lvgl.h"
+#include "lv_png.h"
 
 #ifdef COMPILE_FOR_SDL
 	#define SDL_MAIN_HANDLED    // To fix SDL's "undefined reference to WinMain" issue
@@ -11105,8 +11106,7 @@ pylv_obj_set_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds) {
     LVGL_LOCK
     lv_obj_set_event_cb(self->ref, pylv_event_cb);
     LVGL_UNLOCK
-    
-    
+
     Py_RETURN_NONE;
 }
 
@@ -11191,6 +11191,21 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
     
     lv_list_focus(obj->ref, anim_en);
     
+    LVGL_UNLOCK
+    Py_RETURN_NONE;
+}
+
+// lv_img_set_src has a 'src' parameter with dynamic typing. It can be a (file path) string, symbol or pointer to an image.
+// We only support the string variant.
+static PyObject *
+pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds) {
+    if (!is_alive(self)) return NULL;
+    static char *kwlist[] = {"src", NULL};
+    const char * src;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &src)) return NULL;
+
+    LVGL_LOCK
+    lv_img_set_src(self->ref, src);
     LVGL_UNLOCK
     Py_RETURN_NONE;
 }
@@ -16476,13 +16491,6 @@ pylv_img_init(pylv_Img *self, PyObject *args, PyObject *kwds)
 
 
 static PyObject*
-pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_img_set_src: Parameter type not found >const void*< ");
-    return NULL;
-}
-
-static PyObject*
 pylv_img_set_auto_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
     if (!is_alive(self)) return NULL;
@@ -16688,7 +16696,7 @@ pylv_img_get_antialias(pylv_Obj *self, PyObject *args, PyObject *kwds)
 
 
 static PyMethodDef pylv_img_methods[] = {
-    {"set_src", (PyCFunction) pylv_img_set_src, METH_VARARGS | METH_KEYWORDS, "void lv_img_set_src(lv_obj_t *img, const void *src_img)"},
+    {"set_src", (PyCFunction) pylv_img_set_src, METH_VARARGS | METH_KEYWORDS, ""},
     {"set_auto_size", (PyCFunction) pylv_img_set_auto_size, METH_VARARGS | METH_KEYWORDS, "void lv_img_set_auto_size(lv_obj_t *img, bool autosize_en)"},
     {"set_offset_x", (PyCFunction) pylv_img_set_offset_x, METH_VARARGS | METH_KEYWORDS, "void lv_img_set_offset_x(lv_obj_t *img, lv_coord_t x)"},
     {"set_offset_y", (PyCFunction) pylv_img_set_offset_y, METH_VARARGS | METH_KEYWORDS, "void lv_img_set_offset_y(lv_obj_t *img, lv_coord_t y)"},
@@ -21919,16 +21927,8 @@ pylv_tabview_set_tab_act(pylv_Obj *self, PyObject *args, PyObject *kwds)
 static PyObject*
 pylv_tabview_set_tab_name(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"id", "name", NULL};
-    unsigned short int id;
-    const char * name;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Hs", kwlist , &id, &name)) return NULL;
-
-    LVGL_LOCK         
-    lv_tabview_set_tab_name(self->ref, id, name);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
+    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_tabview_set_tab_name: Parameter type not found >char*< ");
+    return NULL;
 }
 
 static PyObject*
@@ -22032,7 +22032,7 @@ static PyMethodDef pylv_tabview_methods[] = {
     {"add_tab", (PyCFunction) pylv_tabview_add_tab, METH_VARARGS | METH_KEYWORDS, "lv_obj_t *lv_tabview_add_tab(lv_obj_t *tabview, const char *name)"},
     {"clean_tab", (PyCFunction) pylv_tabview_clean_tab, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_clean_tab(lv_obj_t *tab)"},
     {"set_tab_act", (PyCFunction) pylv_tabview_set_tab_act, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_act(lv_obj_t *tabview, uint16_t id, lv_anim_enable_t anim)"},
-    {"set_tab_name", (PyCFunction) pylv_tabview_set_tab_name, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_name(lv_obj_t *tabview, uint16_t id, const char *name)"},
+    {"set_tab_name", (PyCFunction) pylv_tabview_set_tab_name, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_tab_name(lv_obj_t *tabview, uint16_t id, char *name)"},
     {"set_anim_time", (PyCFunction) pylv_tabview_set_anim_time, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_anim_time(lv_obj_t *tabview, uint16_t anim_time)"},
     {"set_btns_pos", (PyCFunction) pylv_tabview_set_btns_pos, METH_VARARGS | METH_KEYWORDS, "void lv_tabview_set_btns_pos(lv_obj_t *tabview, lv_tabview_btns_pos_t btns_pos)"},
     {"get_tab_act", (PyCFunction) pylv_tabview_get_tab_act, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_tabview_get_tab_act(const lv_obj_t *tabview)"},
@@ -24102,7 +24102,7 @@ pylv_task_handler(PyObject *self, PyObject *args) {
 static PyObject *
 pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
     static char *kwlist[] = {"disp", NULL};
-    pylv_Obj *disp = NULL;
+    const lv_disp_t *disp = NULL;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &disp)) return NULL;
 
     LVGL_LOCK
@@ -25112,6 +25112,12 @@ PyInit_lvgl(void) {
 
     init_display_driver();
     init_pointing_device();
+
+    // Debatable if this PNG decoding library should be initialised here or from the main Python program, but
+    // since the png-library is C-code it is easier to build here with the other C-code. Also, in LVGL v8 the
+    // integration of the identical lodepng library becomes a setting in lv_conf.h, so from the Python program
+    // view this is more future proof.
+    lv_png_init();
 
     return module;
     

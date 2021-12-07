@@ -11,7 +11,7 @@ skipfunctions = {
     'lv_obj_get_ext_attr',
     
     # Do not work since they require lv_obj_t == NULL which is not implemented
-    # lv_obj_getchildren is implemented instead which returns a list
+    # lv_obj_get_children is implemented instead which returns a list
     'lv_obj_get_child',
     'lv_obj_get_child_back',
 }
@@ -380,7 +380,7 @@ class PythonBindingsGenerator(BindingsGenerator):
 
         # Custom functions
         for custom in ('lv_obj_get_children', 'lv_obj_set_event_cb', 'lv_label_get_letter_pos', 'lv_label_get_letter_on', 
-                       'lv_obj_get_type', 'lv_list_focus', 'lv_list_add_btn'):
+                       'lv_obj_get_type', 'lv_list_focus', 'lv_list_add_btn', 'lv_img_set_src'):
             obj, method = re.match('lv_([A-Za-z0-9]+)_(\w+)$', custom).groups()
             objects[obj].methods[method] = CustomMethod(custom)
 

@@ -18,7 +18,7 @@ if len(sys.argv) <= 1:
 from distutils.core import setup, Extension
 
 
-sources = ['lvglmodule.c']
+sources = ['lvglmodule.c', 'lv_png.c', 'lodepng.c']
 # LVGL files
 for path in 'lv_core', 'lv_draw', 'lv_font', 'lv_hal', 'lv_misc', 'lv_themes', 'lv_widgets':
     sources.extend(glob.glob('lvgl/src/' + path + '/*.c'))

@@ -2,6 +2,7 @@
 #include "Python.h"
 #include "structmember.h"
 #include "lvgl/lvgl.h"
+#include "lv_png.h"
 
 #ifdef COMPILE_FOR_SDL
 	#define SDL_MAIN_HANDLED    // To fix SDL's "undefined reference to WinMain" issue
@@ -858,8 +859,7 @@ pylv_obj_set_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds) {
     LVGL_LOCK
     lv_obj_set_event_cb(self->ref, pylv_event_cb);
     LVGL_UNLOCK
-    
-    
+
     Py_RETURN_NONE;
 }
 
@@ -944,6 +944,21 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
     
     lv_list_focus(obj->ref, anim_en);
     
+    LVGL_UNLOCK
+    Py_RETURN_NONE;
+}
+
+// lv_img_set_src has a 'src' parameter with dynamic typing. It can be a (file path) string, symbol or pointer to an image.
+// We only support the string variant.
+static PyObject *
+pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds) {
+    if (!is_alive(self)) return NULL;
+    static char *kwlist[] = {"src", NULL};
+    const char * src;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &src)) return NULL;
+
+    LVGL_LOCK
+    lv_img_set_src(self->ref, src);
     LVGL_UNLOCK
     Py_RETURN_NONE;
 }
@@ -1104,7 +1119,7 @@ pylv_task_handler(PyObject *self, PyObject *args) {
 static PyObject *
 pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
     static char *kwlist[] = {"disp", NULL};
-    pylv_Obj *disp = NULL;
+    const lv_disp_t *disp = NULL;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &disp)) return NULL;
 
     LVGL_LOCK
@@ -1275,6 +1290,12 @@ PyInit_lvgl(void) {
 
     init_display_driver();
     init_pointing_device();
+
+    // Debatable if this PNG decoding library should be initialised here or from the main Python program, but
+    // since the png-library is C-code it is easier to build here with the other C-code. Also, in LVGL v8 the
+    // integration of the identical lodepng library becomes a setting in lv_conf.h, so from the Python program
+    // view this is more future proof.
+    lv_png_init();
 
     return module;
     
