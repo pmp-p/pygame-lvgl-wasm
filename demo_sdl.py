@@ -58,8 +58,12 @@ class MainMenu(lvgl.Obj):
         self.lblStatus.set_text(lvgl.SYMBOL.CHARGE + ' heating')
         self.lblStatus.align(self, lvgl.ALIGN.IN_BOTTOM_LEFT, 5, -5)
 
+basic_style = lvgl.Style()
+basic_style.set_bg_color(lvgl.STATE.DEFAULT, lvgl.COLOR.ORANGE.full)
 
 s3 = MainMenu()
+s3.add_style(lvgl.OBJ_PART.MAIN, basic_style)
+
 lvgl.scr_load(s3)
 
 s3.btnPrint.set_event_cb(print)
