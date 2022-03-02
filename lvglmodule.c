@@ -6311,47 +6311,13 @@ pylv_font_fmt_txt_glyph_dsc_t_init(StructObject *self, PyObject *args, PyObject 
     return struct_init(self, args, kwds, &pylv_font_fmt_txt_glyph_dsc_t_Type, sizeof(lv_font_fmt_txt_glyph_dsc_t));
 }
 
-
-
-static PyObject *
-get_struct_bitfield_font_fmt_txt_glyph_dsc_t_bitmap_index(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_font_fmt_txt_glyph_dsc_t*)(self->data))->bitmap_index );
-}
-
-static int
-set_struct_bitfield_font_fmt_txt_glyph_dsc_t_bitmap_index(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1048575)) return -1;
-    ((lv_font_fmt_txt_glyph_dsc_t*)(self->data))->bitmap_index = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_font_fmt_txt_glyph_dsc_t_adv_w(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_font_fmt_txt_glyph_dsc_t*)(self->data))->adv_w );
-}
-
-static int
-set_struct_bitfield_font_fmt_txt_glyph_dsc_t_adv_w(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 4095)) return -1;
-    ((lv_font_fmt_txt_glyph_dsc_t*)(self->data))->adv_w = v;
-    return 0;
-}
-
 static PyGetSetDef pylv_font_fmt_txt_glyph_dsc_t_getset[] = {
-    {"bitmap_index", (getter) get_struct_bitfield_font_fmt_txt_glyph_dsc_t_bitmap_index, (setter) set_struct_bitfield_font_fmt_txt_glyph_dsc_t_bitmap_index, "uint32_t:20 bitmap_index", NULL},
-    {"adv_w", (getter) get_struct_bitfield_font_fmt_txt_glyph_dsc_t_adv_w, (setter) set_struct_bitfield_font_fmt_txt_glyph_dsc_t_adv_w, "uint32_t:12 adv_w", NULL},
-    {"box_w", (getter) struct_get_uint8, (setter) struct_set_uint8, "uint8_t box_w", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, box_w)},
-    {"box_h", (getter) struct_get_uint8, (setter) struct_set_uint8, "uint8_t box_h", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, box_h)},
-    {"ofs_x", (getter) struct_get_int8, (setter) struct_set_int8, "int8_t ofs_x", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, ofs_x)},
-    {"ofs_y", (getter) struct_get_int8, (setter) struct_set_int8, "int8_t ofs_y", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, ofs_y)},
+    {"bitmap_index", (getter) struct_get_uint32, (setter) struct_set_uint32, "uint32_t bitmap_index", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, bitmap_index)},
+    {"adv_w", (getter) struct_get_uint32, (setter) struct_set_uint32, "uint32_t adv_w", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, adv_w)},
+    {"box_w", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t box_w", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, box_w)},
+    {"box_h", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t box_h", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, box_h)},
+    {"ofs_x", (getter) struct_get_int16, (setter) struct_set_int16, "int16_t ofs_x", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, ofs_x)},
+    {"ofs_y", (getter) struct_get_int16, (setter) struct_set_int16, "int16_t ofs_y", (void*)offsetof(lv_font_fmt_txt_glyph_dsc_t, ofs_y)},
     {NULL}
 };
 

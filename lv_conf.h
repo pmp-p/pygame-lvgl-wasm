@@ -421,12 +421,12 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
  * #define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(my_font_1) \
  *                                LV_FONT_DECLARE(my_font_2)
  */
-#define LV_FONT_CUSTOM_DECLARE
+#define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(noto_sans_cjk_18_2bpp)
 
 /* Enable it if you have fonts with a lot of characters.
  * The limit depends on the font size, font face and bpp
  * but with > 10,000 characters if you see issues probably you need to enable it.*/
-#define LV_FONT_FMT_TXT_LARGE   0
+#define LV_FONT_FMT_TXT_LARGE   1
 
 /* Enables/disables support for compressed fonts. If it's disabled, compressed
  * glyphs cannot be processed by the library and won't be rendered.
@@ -481,10 +481,10 @@ typedef void * lv_font_user_data_t;
 #define LV_THEME_DEFAULT_COLOR_PRIMARY      lv_color_hex(0x01a2b1)
 #define LV_THEME_DEFAULT_COLOR_SECONDARY    lv_color_hex(0x44d1b6)
 #define LV_THEME_DEFAULT_FLAG               0
-#define LV_THEME_DEFAULT_FONT_SMALL         &lv_font_montserrat_14
-#define LV_THEME_DEFAULT_FONT_NORMAL        &lv_font_montserrat_14
-#define LV_THEME_DEFAULT_FONT_SUBTITLE      &lv_font_montserrat_14
-#define LV_THEME_DEFAULT_FONT_TITLE         &lv_font_montserrat_14
+#define LV_THEME_DEFAULT_FONT_SMALL         &noto_sans_cjk_18_2bpp
+#define LV_THEME_DEFAULT_FONT_NORMAL        &noto_sans_cjk_18_2bpp
+#define LV_THEME_DEFAULT_FONT_SUBTITLE      &noto_sans_cjk_18_2bpp
+#define LV_THEME_DEFAULT_FONT_TITLE         &noto_sans_cjk_18_2bpp
 
 /*=================
  *  Text settings
