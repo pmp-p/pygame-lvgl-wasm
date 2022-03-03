@@ -7,7 +7,6 @@
 #ifdef COMPILE_FOR_SDL
 	#define SDL_MAIN_HANDLED    // To fix SDL's "undefined reference to WinMain" issue
 	#include <SDL2/SDL.h>
-	#define USE_MONITOR 1
 	#include "lv_drivers/display/monitor.h"
 	#include "lv_drivers/indev/mouse.h"
 #else
@@ -11185,13 +11184,16 @@ pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds) {
 static void
 pylv_obj_dealloc(pylv_Obj *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -15658,13 +15660,16 @@ static PyTypeObject pylv_obj_Type = {
 static void
 pylv_cont_dealloc(pylv_Cont *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -15848,13 +15853,16 @@ static PyTypeObject pylv_cont_Type = {
 static void
 pylv_btn_dealloc(pylv_Btn *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -15976,13 +15984,16 @@ static PyTypeObject pylv_btn_Type = {
 static void
 pylv_imgbtn_dealloc(pylv_Imgbtn *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -16077,13 +16088,16 @@ static PyTypeObject pylv_imgbtn_Type = {
 static void
 pylv_label_dealloc(pylv_Label *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -16423,13 +16437,16 @@ static PyTypeObject pylv_label_Type = {
 static void
 pylv_img_dealloc(pylv_Img *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -16700,13 +16717,16 @@ static PyTypeObject pylv_img_Type = {
 static void
 pylv_line_dealloc(pylv_Line *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -16822,13 +16842,16 @@ static PyTypeObject pylv_line_Type = {
 static void
 pylv_page_dealloc(pylv_Page *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -17412,13 +17435,16 @@ static PyTypeObject pylv_page_Type = {
 static void
 pylv_list_dealloc(pylv_List *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -17696,13 +17722,16 @@ static PyTypeObject pylv_list_Type = {
 static void
 pylv_chart_dealloc(pylv_Chart *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -18162,13 +18191,16 @@ static PyTypeObject pylv_chart_Type = {
 static void
 pylv_table_dealloc(pylv_Table *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -18488,13 +18520,16 @@ static PyTypeObject pylv_table_Type = {
 static void
 pylv_checkbox_dealloc(pylv_Checkbox *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -18660,13 +18695,16 @@ static PyTypeObject pylv_checkbox_Type = {
 static void
 pylv_cpicker_dealloc(pylv_Cpicker *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -18937,13 +18975,16 @@ static PyTypeObject pylv_cpicker_Type = {
 static void
 pylv_bar_dealloc(pylv_Bar *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -19184,13 +19225,16 @@ static PyTypeObject pylv_bar_Type = {
 static void
 pylv_slider_dealloc(pylv_Slider *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -19327,13 +19371,16 @@ static PyTypeObject pylv_slider_Type = {
 static void
 pylv_led_dealloc(pylv_Led *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -19454,13 +19501,16 @@ static PyTypeObject pylv_led_Type = {
 static void
 pylv_btnmatrix_dealloc(pylv_Btnmatrix *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -19801,13 +19851,16 @@ static PyTypeObject pylv_btnmatrix_Type = {
 static void
 pylv_keyboard_dealloc(pylv_Keyboard *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -19993,13 +20046,16 @@ static PyTypeObject pylv_keyboard_Type = {
 static void
 pylv_dropdown_dealloc(pylv_Dropdown *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -20376,13 +20432,16 @@ static PyTypeObject pylv_dropdown_Type = {
 static void
 pylv_roller_dealloc(pylv_Roller *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -20602,13 +20661,16 @@ static PyTypeObject pylv_roller_Type = {
 static void
 pylv_textarea_dealloc(pylv_Textarea *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -21194,13 +21256,16 @@ static PyTypeObject pylv_textarea_Type = {
 static void
 pylv_canvas_dealloc(pylv_Canvas *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -21378,13 +21443,16 @@ static PyTypeObject pylv_canvas_Type = {
 static void
 pylv_win_dealloc(pylv_Win *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -21813,13 +21881,16 @@ static PyTypeObject pylv_win_Type = {
 static void
 pylv_tabview_dealloc(pylv_Tabview *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22027,13 +22098,16 @@ static PyTypeObject pylv_tabview_Type = {
 static void
 pylv_tileview_dealloc(pylv_Tileview *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22131,13 +22205,16 @@ static PyTypeObject pylv_tileview_Type = {
 static void
 pylv_msgbox_dealloc(pylv_Msgbox *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22370,13 +22447,16 @@ static PyTypeObject pylv_msgbox_Type = {
 static void
 pylv_objmask_dealloc(pylv_Objmask *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22450,13 +22530,16 @@ static PyTypeObject pylv_objmask_Type = {
 static void
 pylv_linemeter_dealloc(pylv_Linemeter *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22689,13 +22772,16 @@ static PyTypeObject pylv_linemeter_Type = {
 static void
 pylv_gauge_dealloc(pylv_Gauge *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -22910,13 +22996,16 @@ static PyTypeObject pylv_gauge_Type = {
 static void
 pylv_switch_dealloc(pylv_Switch *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -23025,13 +23114,16 @@ static PyTypeObject pylv_switch_Type = {
 static void
 pylv_arc_dealloc(pylv_Arc *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -23404,13 +23496,16 @@ static PyTypeObject pylv_arc_Type = {
 static void
 pylv_spinner_dealloc(pylv_Spinner *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -23576,13 +23671,16 @@ static PyTypeObject pylv_spinner_Type = {
 static void
 pylv_calendar_dealloc(pylv_Calendar *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -23734,13 +23832,16 @@ static PyTypeObject pylv_calendar_Type = {
 static void
 pylv_spinbox_dealloc(pylv_Spinbox *self) 
 {
-
     // the accompanying lv_obj holds a reference to the Python object, so
     // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on ints parents. 
-    
+    // Obj.del_() or .clean() on its parents.
+
+    // Clear weakrefs first before calling any destructors
     if (self->weakreflist != NULL)
         PyObject_ClearWeakRefs((PyObject *) self);
+
+    // Release callback object
+    Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -25014,7 +25115,7 @@ PyInit_lvgl(void) {
     PyModule_AddObject(module, "SYMBOL", build_constclass('s', "SYMBOL", "AUDIO", LV_SYMBOL_AUDIO, "VIDEO", LV_SYMBOL_VIDEO, "LIST", LV_SYMBOL_LIST, "OK", LV_SYMBOL_OK, "CLOSE", LV_SYMBOL_CLOSE, "POWER", LV_SYMBOL_POWER, "SETTINGS", LV_SYMBOL_SETTINGS, "HOME", LV_SYMBOL_HOME, "DOWNLOAD", LV_SYMBOL_DOWNLOAD, "DRIVE", LV_SYMBOL_DRIVE, "REFRESH", LV_SYMBOL_REFRESH, "MUTE", LV_SYMBOL_MUTE, "VOLUME_MID", LV_SYMBOL_VOLUME_MID, "VOLUME_MAX", LV_SYMBOL_VOLUME_MAX, "IMAGE", LV_SYMBOL_IMAGE, "EDIT", LV_SYMBOL_EDIT, "PREV", LV_SYMBOL_PREV, "PLAY", LV_SYMBOL_PLAY, "PAUSE", LV_SYMBOL_PAUSE, "STOP", LV_SYMBOL_STOP, "NEXT", LV_SYMBOL_NEXT, "EJECT", LV_SYMBOL_EJECT, "LEFT", LV_SYMBOL_LEFT, "RIGHT", LV_SYMBOL_RIGHT, "PLUS", LV_SYMBOL_PLUS, "MINUS", LV_SYMBOL_MINUS, "EYE_OPEN", LV_SYMBOL_EYE_OPEN, "EYE_CLOSE", LV_SYMBOL_EYE_CLOSE, "WARNING", LV_SYMBOL_WARNING, "SHUFFLE", LV_SYMBOL_SHUFFLE, "UP", LV_SYMBOL_UP, "DOWN", LV_SYMBOL_DOWN, "LOOP", LV_SYMBOL_LOOP, "DIRECTORY", LV_SYMBOL_DIRECTORY, "UPLOAD", LV_SYMBOL_UPLOAD, "CALL", LV_SYMBOL_CALL, "CUT", LV_SYMBOL_CUT, "COPY", LV_SYMBOL_COPY, "SAVE", LV_SYMBOL_SAVE, "CHARGE", LV_SYMBOL_CHARGE, "PASTE", LV_SYMBOL_PASTE, "BELL", LV_SYMBOL_BELL, "KEYBOARD", LV_SYMBOL_KEYBOARD, "GPS", LV_SYMBOL_GPS, "FILE", LV_SYMBOL_FILE, "WIFI", LV_SYMBOL_WIFI, "BATTERY_FULL", LV_SYMBOL_BATTERY_FULL, "BATTERY_3", LV_SYMBOL_BATTERY_3, "BATTERY_2", LV_SYMBOL_BATTERY_2, "BATTERY_1", LV_SYMBOL_BATTERY_1, "BATTERY_EMPTY", LV_SYMBOL_BATTERY_EMPTY, "USB", LV_SYMBOL_USB, "BLUETOOTH", LV_SYMBOL_BLUETOOTH, "TRASH", LV_SYMBOL_TRASH, "BACKSPACE", LV_SYMBOL_BACKSPACE, "SD_CARD", LV_SYMBOL_SD_CARD, "NEW_LINE", LV_SYMBOL_NEW_LINE, "DUMMY", LV_SYMBOL_DUMMY, "BULLET", LV_SYMBOL_BULLET, NULL));
 
 
-    PyModule_AddObject(module, "COLOR", build_constclass('C', "COLOR", "WHITE", LV_COLOR_WHITE, "SILVER", LV_COLOR_SILVER, "GRAY", LV_COLOR_GRAY, "BLACK", LV_COLOR_BLACK, "RED", LV_COLOR_RED, "MAROON", LV_COLOR_MAROON, "YELLOW", LV_COLOR_YELLOW, "OLIVE", LV_COLOR_OLIVE, "LIME", LV_COLOR_LIME, "GREEN", LV_COLOR_GREEN, "CYAN", LV_COLOR_CYAN, "AQUA", LV_COLOR_AQUA, "TEAL", LV_COLOR_TEAL, "BLUE", LV_COLOR_BLUE, "NAVY", LV_COLOR_NAVY, "MAGENTA", LV_COLOR_MAGENTA, "PURPLE", LV_COLOR_PURPLE, "ORANGE", LV_COLOR_ORANGE, "SIZE", LV_COLOR_SIZE, "MIX_ROUND_OFS", LV_COLOR_MIX_ROUND_OFS, NULL));
+    PyModule_AddObject(module, "COLOR", build_constclass('C', "COLOR", "WHITE", LV_COLOR_WHITE, "SILVER", LV_COLOR_SILVER, "GRAY", LV_COLOR_GRAY, "BLACK", LV_COLOR_BLACK, "RED", LV_COLOR_RED, "MAROON", LV_COLOR_MAROON, "YELLOW", LV_COLOR_YELLOW, "OLIVE", LV_COLOR_OLIVE, "LIME", LV_COLOR_LIME, "GREEN", LV_COLOR_GREEN, "CYAN", LV_COLOR_CYAN, "AQUA", LV_COLOR_AQUA, "TEAL", LV_COLOR_TEAL, "BLUE", LV_COLOR_BLUE, "NAVY", LV_COLOR_NAVY, "MAGENTA", LV_COLOR_MAGENTA, "PURPLE", LV_COLOR_PURPLE, "ORANGE", LV_COLOR_ORANGE, NULL));
 
 
    PyModule_AddObject(module, "font_montserrat_14", pystruct_from_c(&pylv_font_t_Type, &lv_font_montserrat_14, sizeof(lv_font_t), 0));
