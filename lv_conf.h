@@ -176,13 +176,13 @@ typedef void * lv_anim_user_data_t;
 #define LV_USE_VALUE_STR    1
 
 /* 1: Use other blend modes than normal (`LV_BLEND_MODE_...`)*/
-#define LV_USE_BLEND_MODES      1
+#define LV_USE_BLEND_MODES      0
 
 /* 1: Use the `opa_scale` style property to set the opacity of an object and its children at once*/
 #define LV_USE_OPA_SCALE        1
 
 /* 1: Use image zoom and rotation*/
-#define LV_USE_IMG_TRANSFORM    1
+#define LV_USE_IMG_TRANSFORM    0
 
 /* 1: Enable object groups (for keyboard/encoder navigation) */
 #define LV_USE_GROUP            1
@@ -191,7 +191,7 @@ typedef void * lv_group_user_data_t;
 #endif  /*LV_USE_GROUP*/
 
 /* 1: Enable GPU interface*/
-#define LV_USE_GPU              1   /*Only enables `gpu_fill_cb` and `gpu_blend_cb` in the disp. drv- */
+#define LV_USE_GPU              0   /*Only enables `gpu_fill_cb` and `gpu_blend_cb` in the disp. drv- */
 #define LV_USE_GPU_STM32_DMA2D  0
 /*If enabling LV_USE_GPU_STM32_DMA2D, LV_GPU_DMA2D_CMSIS_INCLUDE must be defined to include path of CMSIS header of target processor
 e.g. "stm32f769xx.h" or "stm32f429xx.h" */
@@ -211,7 +211,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h" */
 #define LV_USE_GPU_NXP_VG_LITE   0
 
 /* 1: Enable file system (might be required for images */
-#define LV_USE_FILESYSTEM       1
+#define LV_USE_FILESYSTEM       0
 #if LV_USE_FILESYSTEM
 /*Declare the type of the user data of file system drivers (can be e.g. `void *`, `int`, `struct`)*/
 typedef void * lv_fs_drv_user_data_t;
@@ -225,7 +225,7 @@ typedef void * lv_fs_drv_user_data_t;
 #define LV_USE_PERF_MONITOR     0
 
 /*1: Use the functions and types from the older API if possible */
-#define LV_USE_API_EXTENSION_V6  1
+#define LV_USE_API_EXTENSION_V6  0
 #define LV_USE_API_EXTENSION_V7  1
 
 /*========================
@@ -589,7 +589,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_BTNMATRIX     1
 
 /*Calendar (dependencies: -)*/
-#define LV_USE_CALENDAR 1
+#define LV_USE_CALENDAR 0
 #if LV_USE_CALENDAR
 #  define LV_CALENDAR_WEEK_STARTS_MONDAY    0
 #endif
@@ -601,7 +601,7 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CHECKBOX       1
 
 /*Chart (dependencies: -)*/
-#define LV_USE_CHART    1
+#define LV_USE_CHART    0
 #if LV_USE_CHART
 #  define LV_CHART_AXIS_TICK_LABEL_MAX_LEN    256
 #endif
@@ -610,17 +610,17 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_CONT     1
 
 /*Color picker (dependencies: -*/
-#define LV_USE_CPICKER   1
+#define LV_USE_CPICKER   0
 
 /*Drop down list (dependencies: lv_page, lv_label, lv_symbol_def.h)*/
-#define LV_USE_DROPDOWN    1
+#define LV_USE_DROPDOWN    0
 #if LV_USE_DROPDOWN != 0
 /*Open and close default animation time [ms] (0: no animation)*/
 #  define LV_DROPDOWN_DEF_ANIM_TIME     200
 #endif
 
 /*Gauge (dependencies:lv_bar, lv_linemeter)*/
-#define LV_USE_GAUGE    1
+#define LV_USE_GAUGE    0
 
 /*Image (dependencies: lv_label*/
 #define LV_USE_IMG      1
@@ -633,7 +633,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Keyboard (dependencies: lv_btnm)*/
-#define LV_USE_KEYBOARD       1
+#define LV_USE_KEYBOARD       0
 
 /*Label (dependencies: -*/
 #define LV_USE_LABEL    1
@@ -652,14 +652,14 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*LED (dependencies: -)*/
-#define LV_USE_LED      1
+#define LV_USE_LED      0
 #if LV_USE_LED
 #  define LV_LED_BRIGHT_MIN  120      /*Minimal brightness*/
 #  define LV_LED_BRIGHT_MAX  255     /*Maximal brightness*/
 #endif
 
 /*Line (dependencies: -*/
-#define LV_USE_LINE     1
+#define LV_USE_LINE     0
 
 /*List (dependencies: lv_page, lv_btn, lv_label, (lv_img optionally for icons ))*/
 #define LV_USE_LIST     1
@@ -669,7 +669,7 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*Line meter (dependencies: *;)*/
-#define LV_USE_LINEMETER   1
+#define LV_USE_LINEMETER   0
 #if LV_USE_LINEMETER
 /* Draw line more precisely at cost of performance.
  * Useful if there are lot of lines any minor are visible
@@ -715,13 +715,13 @@ typedef void * lv_obj_user_data_t;
 #define LV_USE_SLIDER    1
 
 /*Spinbox (dependencies: lv_ta)*/
-#define LV_USE_SPINBOX       1
+#define LV_USE_SPINBOX       0
 
 /*Switch (dependencies: lv_slider)*/
 #define LV_USE_SWITCH       1
 
 /*Text area (dependencies: lv_label, lv_page)*/
-#define LV_USE_TEXTAREA       1
+#define LV_USE_TEXTAREA       0
 #if LV_USE_TEXTAREA != 0
 #  define LV_TEXTAREA_DEF_CURSOR_BLINK_TIME 400     /*ms*/
 #  define LV_TEXTAREA_DEF_PWD_SHOW_TIME     1500    /*ms*/
@@ -730,26 +730,26 @@ typedef void * lv_obj_user_data_t;
 /*Table (dependencies: lv_label)*/
 #define LV_USE_TABLE    1
 #if LV_USE_TABLE
-#  define LV_TABLE_COL_MAX    12
+#  define LV_TABLE_COL_MAX    6
 #  define LV_TABLE_CELL_STYLE_CNT 4
 #endif
 
 /*Tab (dependencies: lv_page, lv_btnm)*/
-#define LV_USE_TABVIEW      1
+#define LV_USE_TABVIEW      0
 #  if LV_USE_TABVIEW != 0
 /*Time of slide animation [ms] (0: no animation)*/
 #  define LV_TABVIEW_DEF_ANIM_TIME    300
 #endif
 
 /*Tileview (dependencies: lv_page) */
-#define LV_USE_TILEVIEW     1
+#define LV_USE_TILEVIEW     0
 #if LV_USE_TILEVIEW
 /*Time of slide animation [ms] (0: no animation)*/
 #  define LV_TILEVIEW_DEF_ANIM_TIME   300
 #endif
 
 /*Window (dependencies: lv_cont, lv_btn, lv_label, lv_img, lv_page)*/
-#define LV_USE_WIN      1
+#define LV_USE_WIN      0
 
 /*==================
  * Non-user section
