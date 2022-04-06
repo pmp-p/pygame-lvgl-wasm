@@ -32,7 +32,7 @@ if os.name == 'nt':
 
 extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE"]
 if os.name != 'nt':
-    extra_compile_args.extend(["-g", "-Wno-unused-function", ])
+    extra_compile_args.extend(["-Wno-unused-function"])
 
 # Do we want to compile for the target? (i.e. for the printer)
 if "--compile_for_target" in sys.argv:
