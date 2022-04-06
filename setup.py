@@ -4,8 +4,9 @@
 # for installing the module.
 #
 # Usage
-# Build the module: setup.py
-# Build and install: setup.py install
+# Build the module for simulation: setup.py
+# Build for simulation and install: setup.py install
+# Build for the target: setup.py build --compile_for_target
 
 import sys
 import os
@@ -29,14 +30,24 @@ if os.name == 'nt':
     for path in '.', 'win32drv':
         sources.extend(glob.glob('lv_drivers/' + path + '/*.c'))
 
-extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE", "-DCOMPILE_FOR_SDL"]
+extra_compile_args = ["-I.", "-DLV_CONF_INCLUDE_SIMPLE"]
 if os.name != 'nt':
     extra_compile_args.extend(["-g", "-Wno-unused-function", ])
+
+# Do we want to compile for the target? (i.e. for the printer)
+if "--compile_for_target" in sys.argv:
+    libraries = []
+    sys.argv.remove("--compile_for_target")
+else:
+    # By default, compile for simulation
+    extra_compile_args.extend(["-DCOMPILE_FOR_SDL"])
+    libraries = ["SDL2"]
+
 
 module1 = Extension('lvgl',
                     sources = sources,
                     extra_compile_args = extra_compile_args,
-                    libraries = ["SDL2"]
+                    libraries = libraries
                     )
 
 dist = setup (name = 'lvgl',
