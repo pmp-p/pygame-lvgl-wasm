@@ -1076,35 +1076,6 @@ pylv_tick_inc(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
-// Create a task
-static PyObject *
-pylv_task_create(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"task_xcb", "period", "prio", "user_data", NULL};
-    pylv_Obj *task_xcb, *user_data = NULL;
-    uint32_t period, prio;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!IIO", kwlist, &pylv_obj_Type, &task_xcb, &period, &prio, &user_data)) return NULL;
-    LVGL_LOCK
-    lv_task_create(task_xcb, period, prio, user_data);
-    LVGL_UNLOCK
-
-    Py_RETURN_NONE;
-}
-
-// Delete a task
-static PyObject *
-pylv_task_del(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"task", NULL};
-    pylv_Obj *task = NULL;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &task)) return NULL;
-    if (task == NULL) return NULL;
-
-    LVGL_LOCK
-    lv_task_del(task);
-    LVGL_UNLOCK
-
-    Py_RETURN_NONE;
-}
-
 static PyObject *
 pylv_task_handler(PyObject *self, PyObject *args) {
     LVGL_LOCK
@@ -1198,8 +1169,6 @@ static PyMethodDef lvglMethods[] = {
     {"poll", poll, METH_NOARGS, NULL},
     {"tick_inc", (PyCFunction)pylv_tick_inc, METH_VARARGS | METH_KEYWORDS, NULL},
     {"task_handler", pylv_task_handler, METH_NOARGS, NULL},
-    {"task_create", (PyCFunction)pylv_task_create,  METH_VARARGS | METH_KEYWORDS, NULL},
-    {"task_del", (PyCFunction)pylv_task_del,  METH_VARARGS | METH_KEYWORDS, NULL},
     {"disp_get_inactive_time", (PyCFunction)pylv_disp_get_inactive_time, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
