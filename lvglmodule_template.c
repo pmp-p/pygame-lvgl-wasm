@@ -1100,28 +1100,10 @@ pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
     return PyLong_FromLong(inactive_time);
 }
 
-/* TODO: all the framebuffer display driver stuff could be separated (i.e. do not default to it but allow user to register custom frame buffer driver) */
-
+// disp_buffer doesn't have to be equal to the screen size, it's an
+// intermediate buffer for screen manipulation. Larger will be faster.
 static lv_color_t disp_buf1[1024 * 10];
 lv_disp_buf_t disp_buffer;
-char framebuffer[LV_HOR_RES_MAX * LV_VER_RES_MAX * 2];
-
-
-/* disp_flush should copy from the VDB (virtual display buffer to the screen.
- * In our case, we copy to the framebuffer
- */
-static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p) {
-    char *dest = framebuffer + ((area->y1)*LV_HOR_RES_MAX + area->x1) * 2;
-    char *src = (char *) color_p;
-
-    for(int32_t y = area->y1; y<=area->y2; y++) {
-        memcpy(dest, src, 2*(area->x2-area->x1+1));
-        src += 2*(area->x2-area->x1+1);
-        dest += 2*LV_HOR_RES_MAX;
-    }
-
-    lv_disp_flush_ready(disp_drv);
-}
 
 // Register the display in LVGL
 static void init_display_driver() {
@@ -1134,11 +1116,10 @@ static void init_display_driver() {
 #ifdef COMPILE_FOR_SDL
 	display_driver.flush_cb = monitor_flush;
 #else
-    display_driver.flush_cb = disp_flush;
-	// CKI:  TODO: use this instead of own written code?: display_driver.flush_cb = fbdev_flush;
+	display_driver.flush_cb = fbdev_flush;
 #endif
 
-    lv_disp_buf_init(&disp_buffer,disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
+    lv_disp_buf_init(&disp_buffer, disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
     display_driver.buffer = &disp_buffer;
 
     lv_disp_drv_register(&display_driver);
@@ -1243,7 +1224,6 @@ PyInit_lvgl(void) {
     typesdict = Py_BuildValue("{<<<objects:sO>>>}"<<<objects:,
         "lv_{name}", &pylv_{name}_Type>>>);
     
-    PyModule_AddObject(module, "framebuffer", PyMemoryView_FromMemory(framebuffer, sizeof(framebuffer), PyBUF_READ));
     PyModule_AddObject(module, "HOR_RES", PyLong_FromLong(LV_HOR_RES_MAX));
     PyModule_AddObject(module, "VER_RES", PyLong_FromLong(LV_VER_RES_MAX));
 
