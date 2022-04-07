@@ -13506,55 +13506,6 @@ pylv_obj_fade_out(pylv_Obj *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
-static PyObject*
-pylv_obj_align_origo(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"base", "align", "x_ofs", "y_ofs", NULL};
-    pylv_Obj * base;
-    unsigned char align;
-    short int x_ofs;
-    short int y_ofs;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!bhh", kwlist , &pylv_obj_Type, &base, &align, &x_ofs, &y_ofs)) return NULL;
-
-    LVGL_LOCK         
-    lv_obj_align_origo(self->ref, base->ref, align, x_ofs, y_ofs);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_obj_align_origo_x(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"base", "align", "x_ofs", NULL};
-    pylv_Obj * base;
-    unsigned char align;
-    short int x_ofs;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!bh", kwlist , &pylv_obj_Type, &base, &align, &x_ofs)) return NULL;
-
-    LVGL_LOCK         
-    lv_obj_align_origo_x(self->ref, base->ref, align, x_ofs);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_obj_align_origo_y(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"base", "align", "y_ofs", NULL};
-    pylv_Obj * base;
-    unsigned char align;
-    short int y_ofs;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!bh", kwlist , &pylv_obj_Type, &base, &align, &y_ofs)) return NULL;
-
-    LVGL_LOCK         
-    lv_obj_align_origo_y(self->ref, base->ref, align, y_ofs);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
 
 static PyMethodDef pylv_obj_methods[] = {
     {"del_", (PyCFunction) pylv_obj_del, METH_VARARGS | METH_KEYWORDS, "lv_res_t lv_obj_del(lv_obj_t *obj)"},
@@ -13864,9 +13815,6 @@ static PyMethodDef pylv_obj_methods[] = {
     {"get_draw_rect_ext_pad_size", (PyCFunction) pylv_obj_get_draw_rect_ext_pad_size, METH_VARARGS | METH_KEYWORDS, "lv_coord_t lv_obj_get_draw_rect_ext_pad_size(lv_obj_t *obj, uint8_t part)"},
     {"fade_in", (PyCFunction) pylv_obj_fade_in, METH_VARARGS | METH_KEYWORDS, "void lv_obj_fade_in(lv_obj_t *obj, uint32_t time, uint32_t delay)"},
     {"fade_out", (PyCFunction) pylv_obj_fade_out, METH_VARARGS | METH_KEYWORDS, "void lv_obj_fade_out(lv_obj_t *obj, uint32_t time, uint32_t delay)"},
-    {"align_origo", (PyCFunction) pylv_obj_align_origo, METH_VARARGS | METH_KEYWORDS, "inline static void lv_obj_align_origo(lv_obj_t *obj, const lv_obj_t *base, lv_align_t align, lv_coord_t x_ofs, lv_coord_t y_ofs)"},
-    {"align_origo_x", (PyCFunction) pylv_obj_align_origo_x, METH_VARARGS | METH_KEYWORDS, "inline static void lv_obj_align_origo_x(lv_obj_t *obj, const lv_obj_t *base, lv_align_t align, lv_coord_t x_ofs)"},
-    {"align_origo_y", (PyCFunction) pylv_obj_align_origo_y, METH_VARARGS | METH_KEYWORDS, "inline static void lv_obj_align_origo_y(lv_obj_t *obj, const lv_obj_t *base, lv_align_t align, lv_coord_t y_ofs)"},
     {"get_children", (PyCFunction) pylv_obj_get_children, METH_VARARGS | METH_KEYWORDS, ""},
     {NULL}  /* Sentinel */
 };
@@ -18448,35 +18396,6 @@ pylv_tick_inc(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
-// Create a task
-static PyObject *
-pylv_task_create(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"task_xcb", "period", "prio", "user_data", NULL};
-    pylv_Obj *task_xcb, *user_data = NULL;
-    uint32_t period, prio;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!IIO", kwlist, &pylv_obj_Type, &task_xcb, &period, &prio, &user_data)) return NULL;
-    LVGL_LOCK
-    lv_task_create(task_xcb, period, prio, user_data);
-    LVGL_UNLOCK
-
-    Py_RETURN_NONE;
-}
-
-// Delete a task
-static PyObject *
-pylv_task_del(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"task", NULL};
-    pylv_Obj *task = NULL;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &task)) return NULL;
-    if (task == NULL) return NULL;
-
-    LVGL_LOCK
-    lv_task_del(task);
-    LVGL_UNLOCK
-
-    Py_RETURN_NONE;
-}
-
 static PyObject *
 pylv_task_handler(PyObject *self, PyObject *args) {
     LVGL_LOCK
@@ -18501,28 +18420,10 @@ pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
     return PyLong_FromLong(inactive_time);
 }
 
-/* TODO: all the framebuffer display driver stuff could be separated (i.e. do not default to it but allow user to register custom frame buffer driver) */
-
+// disp_buffer doesn't have to be equal to the screen size, it's an
+// intermediate buffer for screen manipulation. Larger will be faster.
 static lv_color_t disp_buf1[1024 * 10];
 lv_disp_buf_t disp_buffer;
-char framebuffer[LV_HOR_RES_MAX * LV_VER_RES_MAX * 2];
-
-
-/* disp_flush should copy from the VDB (virtual display buffer to the screen.
- * In our case, we copy to the framebuffer
- */
-static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p) {
-    char *dest = framebuffer + ((area->y1)*LV_HOR_RES_MAX + area->x1) * 2;
-    char *src = (char *) color_p;
-
-    for(int32_t y = area->y1; y<=area->y2; y++) {
-        memcpy(dest, src, 2*(area->x2-area->x1+1));
-        src += 2*(area->x2-area->x1+1);
-        dest += 2*LV_HOR_RES_MAX;
-    }
-
-    lv_disp_flush_ready(disp_drv);
-}
 
 // Register the display in LVGL
 static void init_display_driver() {
@@ -18535,11 +18436,10 @@ static void init_display_driver() {
 #ifdef COMPILE_FOR_SDL
 	display_driver.flush_cb = monitor_flush;
 #else
-    display_driver.flush_cb = disp_flush;
-	// CKI:  TODO: use this instead of own written code?: display_driver.flush_cb = fbdev_flush;
+	display_driver.flush_cb = fbdev_flush;
 #endif
 
-    lv_disp_buf_init(&disp_buffer,disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
+    lv_disp_buf_init(&disp_buffer, disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
     display_driver.buffer = &disp_buffer;
 
     lv_disp_drv_register(&display_driver);
@@ -18570,8 +18470,6 @@ static PyMethodDef lvglMethods[] = {
     {"poll", poll, METH_NOARGS, NULL},
     {"tick_inc", (PyCFunction)pylv_tick_inc, METH_VARARGS | METH_KEYWORDS, NULL},
     {"task_handler", pylv_task_handler, METH_NOARGS, NULL},
-    {"task_create", (PyCFunction)pylv_task_create,  METH_VARARGS | METH_KEYWORDS, NULL},
-    {"task_del", (PyCFunction)pylv_task_del,  METH_VARARGS | METH_KEYWORDS, NULL},
     {"disp_get_inactive_time", (PyCFunction)pylv_disp_get_inactive_time, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
@@ -19257,7 +19155,6 @@ PyInit_lvgl(void) {
         "lv_arc", &pylv_arc_Type,
         "lv_spinner", &pylv_spinner_Type);
     
-    PyModule_AddObject(module, "framebuffer", PyMemoryView_FromMemory(framebuffer, sizeof(framebuffer), PyBUF_READ));
     PyModule_AddObject(module, "HOR_RES", PyLong_FromLong(LV_HOR_RES_MAX));
     PyModule_AddObject(module, "VER_RES", PyLong_FromLong(LV_VER_RES_MAX));
 
