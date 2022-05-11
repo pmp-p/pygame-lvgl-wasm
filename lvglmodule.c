@@ -68,29 +68,19 @@ typedef pylv_Cont pylv_Page;
 
 typedef pylv_Page pylv_List;
 
-typedef pylv_Obj pylv_Table;
-
 typedef pylv_Btn pylv_Checkbox;
 
 typedef pylv_Obj pylv_Bar;
 
 typedef pylv_Bar pylv_Slider;
 
-typedef pylv_Obj pylv_Btnmatrix;
-
 typedef pylv_Page pylv_Roller;
 
 typedef pylv_Img pylv_Canvas;
 
-typedef pylv_Cont pylv_Msgbox;
-
-typedef pylv_Cont pylv_Objmask;
-
 typedef pylv_Bar pylv_Switch;
 
 typedef pylv_Obj pylv_Arc;
-
-typedef pylv_Arc pylv_Spinner;
 
 
 
@@ -116,29 +106,19 @@ static PyTypeObject pylv_page_Type;
 
 static PyTypeObject pylv_list_Type;
 
-static PyTypeObject pylv_table_Type;
-
 static PyTypeObject pylv_checkbox_Type;
 
 static PyTypeObject pylv_bar_Type;
 
 static PyTypeObject pylv_slider_Type;
 
-static PyTypeObject pylv_btnmatrix_Type;
-
 static PyTypeObject pylv_roller_Type;
 
 static PyTypeObject pylv_canvas_Type;
 
-static PyTypeObject pylv_msgbox_Type;
-
-static PyTypeObject pylv_objmask_Type;
-
 static PyTypeObject pylv_switch_Type;
 
 static PyTypeObject pylv_arc_Type;
-
-static PyTypeObject pylv_spinner_Type;
 
 
 
@@ -234,8 +214,6 @@ static PyTypeObject pylv_get_style_info_t_Type;
 
 static PyTypeObject pylv_get_state_info_t_Type;
 
-static PyTypeObject pylv_group_t_Type;
-
 static PyTypeObject pylv_theme_t_Type;
 
 static PyTypeObject pylv_font_fmt_txt_glyph_dsc_t_Type;
@@ -262,10 +240,6 @@ static PyTypeObject pylv_page_ext_t_Type;
 
 static PyTypeObject pylv_list_ext_t_Type;
 
-static PyTypeObject pylv_table_cell_format_t_Type;
-
-static PyTypeObject pylv_table_ext_t_Type;
-
 static PyTypeObject pylv_checkbox_ext_t_Type;
 
 static PyTypeObject pylv_bar_anim_t_Type;
@@ -274,23 +248,13 @@ static PyTypeObject pylv_bar_ext_t_Type;
 
 static PyTypeObject pylv_slider_ext_t_Type;
 
-static PyTypeObject pylv_btnmatrix_ext_t_Type;
-
 static PyTypeObject pylv_roller_ext_t_Type;
 
 static PyTypeObject pylv_canvas_ext_t_Type;
 
-static PyTypeObject pylv_msgbox_ext_t_Type;
-
-static PyTypeObject pylv_objmask_mask_t_Type;
-
-static PyTypeObject pylv_objmask_ext_t_Type;
-
 static PyTypeObject pylv_switch_ext_t_Type;
 
 static PyTypeObject pylv_arc_ext_t_Type;
-
-static PyTypeObject pylv_spinner_ext_t_Type;
 
 static PyTypeObject pylv_img_cache_entry_t_Type;
 
@@ -329,8 +293,6 @@ static PyTypeObject pylv_label_ext_t_dot_Type;
 static PyTypeObject pylv_page_ext_t_scrlbar_Type;
 
 static PyTypeObject pylv_page_ext_t_edge_flash_Type;
-
-static PyTypeObject pylv_table_cell_format_t_s_Type;
 
 
 /****************************************************************
@@ -5617,7 +5579,6 @@ static PyGetSetDef pylv_obj_t_getset[] = {
     {"focus_parent", (getter) get_struct_bitfield_obj_t_focus_parent, (setter) set_struct_bitfield_obj_t_focus_parent, "uint8_t:1 focus_parent", NULL},
     {"drag_dir", (getter) get_struct_bitfield_obj_t_drag_dir, (setter) set_struct_bitfield_obj_t_drag_dir, "lv_drag_dir_t:3 drag_dir", NULL},
     {"base_dir", (getter) get_struct_bitfield_obj_t_base_dir, (setter) set_struct_bitfield_obj_t_base_dir, "lv_bidi_dir_t:2 base_dir", NULL},
-    {"group_p", (getter) struct_get_struct, (setter) struct_set_struct, "void group_p", & ((struct_closure_t){ &Blob_Type, offsetof(lv_obj_t, group_p), sizeof(((lv_obj_t *)0)->group_p)})},
     {"protect", (getter) struct_get_uint8, (setter) struct_set_uint8, "uint8_t protect", (void*)offsetof(lv_obj_t, protect)},
     {"state", (getter) struct_get_uint8, (setter) struct_set_uint8, "lv_state_t state", (void*)offsetof(lv_obj_t, state)},
     {"realign", (getter) struct_get_struct, (setter) struct_set_struct, "lv_realign_t realign", & ((struct_closure_t){ &pylv_realign_t_Type, offsetof(lv_obj_t, realign), sizeof(lv_realign_t)})},
@@ -5839,145 +5800,6 @@ static int pylv_get_state_info_t_arg_converter(PyObject *obj, void* target) {
         return 0;
     }
     *(lv_get_state_info_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_group_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_group_t_Type, sizeof(lv_group_t));
-}
-
-
-
-static PyObject *
-get_struct_bitfield_group_t_frozen(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_group_t*)(self->data))->frozen );
-}
-
-static int
-set_struct_bitfield_group_t_frozen(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_group_t*)(self->data))->frozen = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_group_t_editing(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_group_t*)(self->data))->editing );
-}
-
-static int
-set_struct_bitfield_group_t_editing(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_group_t*)(self->data))->editing = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_group_t_click_focus(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_group_t*)(self->data))->click_focus );
-}
-
-static int
-set_struct_bitfield_group_t_click_focus(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_group_t*)(self->data))->click_focus = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_group_t_refocus_policy(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_group_t*)(self->data))->refocus_policy );
-}
-
-static int
-set_struct_bitfield_group_t_refocus_policy(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_group_t*)(self->data))->refocus_policy = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_group_t_wrap(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_group_t*)(self->data))->wrap );
-}
-
-static int
-set_struct_bitfield_group_t_wrap(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_group_t*)(self->data))->wrap = v;
-    return 0;
-}
-
-static PyGetSetDef pylv_group_t_getset[] = {
-    {"obj_ll", (getter) struct_get_struct, (setter) struct_set_struct, "lv_ll_t obj_ll", & ((struct_closure_t){ &pylv_ll_t_Type, offsetof(lv_group_t, obj_ll), sizeof(lv_ll_t)})},
-    {"obj_focus", (getter) struct_get_struct, (setter) struct_set_struct, "lv_obj_t obj_focus", & ((struct_closure_t){ &Blob_Type, offsetof(lv_group_t, obj_focus), sizeof(((lv_group_t *)0)->obj_focus)})},
-    {"focus_cb", (getter) struct_get_struct, (setter) struct_set_struct, "lv_group_focus_cb_t focus_cb", & ((struct_closure_t){ &Blob_Type, offsetof(lv_group_t, focus_cb), sizeof(((lv_group_t *)0)->focus_cb)})},
-    {"user_data", (getter) struct_get_struct, (setter) struct_set_struct, "lv_group_user_data_t user_data", & ((struct_closure_t){ &Blob_Type, offsetof(lv_group_t, user_data), sizeof(((lv_group_t *)0)->user_data)})},
-    {"frozen", (getter) get_struct_bitfield_group_t_frozen, (setter) set_struct_bitfield_group_t_frozen, "uint8_t:1 frozen", NULL},
-    {"editing", (getter) get_struct_bitfield_group_t_editing, (setter) set_struct_bitfield_group_t_editing, "uint8_t:1 editing", NULL},
-    {"click_focus", (getter) get_struct_bitfield_group_t_click_focus, (setter) set_struct_bitfield_group_t_click_focus, "uint8_t:1 click_focus", NULL},
-    {"refocus_policy", (getter) get_struct_bitfield_group_t_refocus_policy, (setter) set_struct_bitfield_group_t_refocus_policy, "uint8_t:1 refocus_policy", NULL},
-    {"wrap", (getter) get_struct_bitfield_group_t_wrap, (setter) set_struct_bitfield_group_t_wrap, "uint8_t:1 wrap", NULL},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_group_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.group_t",
-    .tp_doc = "lvgl group_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_group_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_group_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_group_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_group_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_group_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_group_t **)target = (void *)((StructObject*)obj) -> data;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
 
@@ -7026,7 +6848,6 @@ pylv_list_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds)
 
 static PyGetSetDef pylv_list_ext_t_getset[] = {
     {"page", (getter) struct_get_struct, (setter) struct_set_struct, "lv_page_ext_t page", & ((struct_closure_t){ &pylv_page_ext_t_Type, offsetof(lv_list_ext_t, page), sizeof(lv_page_ext_t)})},
-    {"last_sel_btn", (getter) struct_get_struct, (setter) struct_set_struct, "lv_obj_t last_sel_btn", & ((struct_closure_t){ &Blob_Type, offsetof(lv_list_ext_t, last_sel_btn), sizeof(((lv_list_ext_t *)0)->last_sel_btn)})},
     {"act_sel_btn", (getter) struct_get_struct, (setter) struct_set_struct, "lv_obj_t act_sel_btn", & ((struct_closure_t){ &Blob_Type, offsetof(lv_list_ext_t, act_sel_btn), sizeof(((lv_list_ext_t *)0)->act_sel_btn)})},
     {NULL}
 };
@@ -7058,122 +6879,6 @@ static int pylv_list_ext_t_arg_converter(PyObject *obj, void* target) {
         return 0;
     }
     *(lv_list_ext_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_table_cell_format_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_table_cell_format_t_Type, sizeof(lv_table_cell_format_t));
-}
-
-static PyGetSetDef pylv_table_cell_format_t_getset[] = {
-    {"s", (getter) struct_get_struct, (setter) struct_set_struct, "struct  {   uint8_t align : 2;   uint8_t right_merge : 1;   uint8_t type : 4;   uint8_t crop : 1; } s", & ((struct_closure_t){ &pylv_table_cell_format_t_s_Type, offsetof(lv_table_cell_format_t, s), sizeof(((lv_table_cell_format_t *)0)->s)})},
-    {"format_byte", (getter) struct_get_uint8, (setter) struct_set_uint8, "uint8_t format_byte", (void*)offsetof(lv_table_cell_format_t, format_byte)},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_table_cell_format_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.table_cell_format_t",
-    .tp_doc = "lvgl table_cell_format_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_table_cell_format_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_table_cell_format_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_table_cell_format_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_table_cell_format_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_table_cell_format_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_table_cell_format_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_table_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_table_ext_t_Type, sizeof(lv_table_ext_t));
-}
-
-
-
-static PyObject *
-get_struct_bitfield_table_ext_t_cell_types(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_table_ext_t*)(self->data))->cell_types );
-}
-
-static int
-set_struct_bitfield_table_ext_t_cell_types(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 15)) return -1;
-    ((lv_table_ext_t*)(self->data))->cell_types = v;
-    return 0;
-}
-
-static PyGetSetDef pylv_table_ext_t_getset[] = {
-    {"col_cnt", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t col_cnt", (void*)offsetof(lv_table_ext_t, col_cnt)},
-    {"row_cnt", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t row_cnt", (void*)offsetof(lv_table_ext_t, row_cnt)},
-    {"cell_data", (getter) struct_get_struct, (setter) struct_set_struct, "char cell_data", & ((struct_closure_t){ &Blob_Type, offsetof(lv_table_ext_t, cell_data), sizeof(((lv_table_ext_t *)0)->cell_data)})},
-    {"row_h", (getter) struct_get_struct, (setter) struct_set_struct, "lv_coord_t row_h", & ((struct_closure_t){ &Blob_Type, offsetof(lv_table_ext_t, row_h), sizeof(((lv_table_ext_t *)0)->row_h)})},
-    {"cell_style", (getter) struct_get_struct, (setter) struct_set_struct, "lv_style_list_t4 cell_style", & ((struct_closure_t){ &Blob_Type, offsetof(lv_table_ext_t, cell_style), sizeof(((lv_table_ext_t *)0)->cell_style)})},
-    {"col_w", (getter) struct_get_struct, (setter) struct_set_struct, "lv_coord_t6 col_w", & ((struct_closure_t){ &Blob_Type, offsetof(lv_table_ext_t, col_w), sizeof(((lv_table_ext_t *)0)->col_w)})},
-    {"cell_types", (getter) get_struct_bitfield_table_ext_t_cell_types, (setter) set_struct_bitfield_table_ext_t_cell_types, "uint16_t:4 cell_types", NULL},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_table_ext_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.table_ext_t",
-    .tp_doc = "lvgl table_ext_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_table_ext_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_table_ext_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_table_ext_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_table_ext_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_table_ext_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_table_ext_t **)target = (void *)((StructObject*)obj) -> data;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
 
@@ -7438,113 +7143,6 @@ static int pylv_slider_ext_t_arg_converter(PyObject *obj, void* target) {
 
 
 static int
-pylv_btnmatrix_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_btnmatrix_ext_t_Type, sizeof(lv_btnmatrix_ext_t));
-}
-
-
-
-static PyObject *
-get_struct_bitfield_btnmatrix_ext_t_recolor(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_btnmatrix_ext_t*)(self->data))->recolor );
-}
-
-static int
-set_struct_bitfield_btnmatrix_ext_t_recolor(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_btnmatrix_ext_t*)(self->data))->recolor = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_btnmatrix_ext_t_one_check(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_btnmatrix_ext_t*)(self->data))->one_check );
-}
-
-static int
-set_struct_bitfield_btnmatrix_ext_t_one_check(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_btnmatrix_ext_t*)(self->data))->one_check = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_btnmatrix_ext_t_align(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_btnmatrix_ext_t*)(self->data))->align );
-}
-
-static int
-set_struct_bitfield_btnmatrix_ext_t_align(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 3)) return -1;
-    ((lv_btnmatrix_ext_t*)(self->data))->align = v;
-    return 0;
-}
-
-static PyGetSetDef pylv_btnmatrix_ext_t_getset[] = {
-    {"map_p", (getter) struct_get_struct, (setter) struct_set_struct, "char map_p", & ((struct_closure_t){ &Blob_Type, offsetof(lv_btnmatrix_ext_t, map_p), sizeof(((lv_btnmatrix_ext_t *)0)->map_p)})},
-    {"button_areas", (getter) struct_get_struct, (setter) struct_set_struct, "lv_area_t button_areas", & ((struct_closure_t){ &Blob_Type, offsetof(lv_btnmatrix_ext_t, button_areas), sizeof(((lv_btnmatrix_ext_t *)0)->button_areas)})},
-    {"ctrl_bits", (getter) struct_get_struct, (setter) struct_set_struct, "lv_btnmatrix_ctrl_t ctrl_bits", & ((struct_closure_t){ &Blob_Type, offsetof(lv_btnmatrix_ext_t, ctrl_bits), sizeof(((lv_btnmatrix_ext_t *)0)->ctrl_bits)})},
-    {"style_btn", (getter) struct_get_struct, (setter) struct_set_struct, "lv_style_list_t style_btn", & ((struct_closure_t){ &pylv_style_list_t_Type, offsetof(lv_btnmatrix_ext_t, style_btn), sizeof(lv_style_list_t)})},
-    {"btn_cnt", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t btn_cnt", (void*)offsetof(lv_btnmatrix_ext_t, btn_cnt)},
-    {"btn_id_pr", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t btn_id_pr", (void*)offsetof(lv_btnmatrix_ext_t, btn_id_pr)},
-    {"btn_id_focused", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t btn_id_focused", (void*)offsetof(lv_btnmatrix_ext_t, btn_id_focused)},
-    {"btn_id_act", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t btn_id_act", (void*)offsetof(lv_btnmatrix_ext_t, btn_id_act)},
-    {"recolor", (getter) get_struct_bitfield_btnmatrix_ext_t_recolor, (setter) set_struct_bitfield_btnmatrix_ext_t_recolor, "uint8_t:1 recolor", NULL},
-    {"one_check", (getter) get_struct_bitfield_btnmatrix_ext_t_one_check, (setter) set_struct_bitfield_btnmatrix_ext_t_one_check, "uint8_t:1 one_check", NULL},
-    {"align", (getter) get_struct_bitfield_btnmatrix_ext_t_align, (setter) set_struct_bitfield_btnmatrix_ext_t_align, "uint8_t:2 align", NULL},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_btnmatrix_ext_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.btnmatrix_ext_t",
-    .tp_doc = "lvgl btnmatrix_ext_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_btnmatrix_ext_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_btnmatrix_ext_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_btnmatrix_ext_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_btnmatrix_ext_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_btnmatrix_ext_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_btnmatrix_ext_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
 pylv_roller_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
 {
     return struct_init(self, args, kwds, &pylv_roller_ext_t_Type, sizeof(lv_roller_ext_t));
@@ -7669,148 +7267,6 @@ static int pylv_canvas_ext_t_arg_converter(PyObject *obj, void* target) {
         return 0;
     }
     *(lv_canvas_ext_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_msgbox_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_msgbox_ext_t_Type, sizeof(lv_msgbox_ext_t));
-}
-
-static PyGetSetDef pylv_msgbox_ext_t_getset[] = {
-    {"bg", (getter) struct_get_struct, (setter) struct_set_struct, "lv_cont_ext_t bg", & ((struct_closure_t){ &pylv_cont_ext_t_Type, offsetof(lv_msgbox_ext_t, bg), sizeof(lv_cont_ext_t)})},
-    {"text", (getter) struct_get_struct, (setter) struct_set_struct, "lv_obj_t text", & ((struct_closure_t){ &Blob_Type, offsetof(lv_msgbox_ext_t, text), sizeof(((lv_msgbox_ext_t *)0)->text)})},
-    {"btnm", (getter) struct_get_struct, (setter) struct_set_struct, "lv_obj_t btnm", & ((struct_closure_t){ &Blob_Type, offsetof(lv_msgbox_ext_t, btnm), sizeof(((lv_msgbox_ext_t *)0)->btnm)})},
-    {"anim_time", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t anim_time", (void*)offsetof(lv_msgbox_ext_t, anim_time)},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_msgbox_ext_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.msgbox_ext_t",
-    .tp_doc = "lvgl msgbox_ext_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_msgbox_ext_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_msgbox_ext_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_msgbox_ext_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_msgbox_ext_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_msgbox_ext_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_msgbox_ext_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_objmask_mask_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_objmask_mask_t_Type, sizeof(lv_objmask_mask_t));
-}
-
-static PyGetSetDef pylv_objmask_mask_t_getset[] = {
-    {"param", (getter) struct_get_struct, (setter) struct_set_struct, "void param", & ((struct_closure_t){ &Blob_Type, offsetof(lv_objmask_mask_t, param), sizeof(((lv_objmask_mask_t *)0)->param)})},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_objmask_mask_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.objmask_mask_t",
-    .tp_doc = "lvgl objmask_mask_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_objmask_mask_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_objmask_mask_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_objmask_mask_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_objmask_mask_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_objmask_mask_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_objmask_mask_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_objmask_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_objmask_ext_t_Type, sizeof(lv_objmask_ext_t));
-}
-
-static PyGetSetDef pylv_objmask_ext_t_getset[] = {
-    {"cont", (getter) struct_get_struct, (setter) struct_set_struct, "lv_cont_ext_t cont", & ((struct_closure_t){ &pylv_cont_ext_t_Type, offsetof(lv_objmask_ext_t, cont), sizeof(lv_cont_ext_t)})},
-    {"mask_ll", (getter) struct_get_struct, (setter) struct_set_struct, "lv_ll_t mask_ll", & ((struct_closure_t){ &pylv_ll_t_Type, offsetof(lv_objmask_ext_t, mask_ll), sizeof(lv_ll_t)})},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_objmask_ext_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.objmask_ext_t",
-    .tp_doc = "lvgl objmask_ext_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_objmask_ext_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_objmask_ext_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_objmask_ext_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_objmask_ext_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_objmask_ext_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_objmask_ext_t **)target = (void *)((StructObject*)obj) -> data;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
 
@@ -7988,90 +7444,6 @@ static int pylv_arc_ext_t_arg_converter(PyObject *obj, void* target) {
         return 0;
     }
     *(lv_arc_ext_t **)target = (void *)((StructObject*)obj) -> data;
-    Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
-    return 1;
-
-}
-
-
-
-
-static int
-pylv_spinner_ext_t_init(StructObject *self, PyObject *args, PyObject *kwds) 
-{
-    return struct_init(self, args, kwds, &pylv_spinner_ext_t_Type, sizeof(lv_spinner_ext_t));
-}
-
-
-
-static PyObject *
-get_struct_bitfield_spinner_ext_t_anim_type(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_spinner_ext_t*)(self->data))->anim_type );
-}
-
-static int
-set_struct_bitfield_spinner_ext_t_anim_type(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 3)) return -1;
-    ((lv_spinner_ext_t*)(self->data))->anim_type = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_spinner_ext_t_anim_dir(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_spinner_ext_t*)(self->data))->anim_dir );
-}
-
-static int
-set_struct_bitfield_spinner_ext_t_anim_dir(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_spinner_ext_t*)(self->data))->anim_dir = v;
-    return 0;
-}
-
-static PyGetSetDef pylv_spinner_ext_t_getset[] = {
-    {"arc", (getter) struct_get_struct, (setter) struct_set_struct, "lv_arc_ext_t arc", & ((struct_closure_t){ &pylv_arc_ext_t_Type, offsetof(lv_spinner_ext_t, arc), sizeof(lv_arc_ext_t)})},
-    {"arc_length", (getter) struct_get_int16, (setter) struct_set_int16, "lv_anim_value_t arc_length", (void*)offsetof(lv_spinner_ext_t, arc_length)},
-    {"time", (getter) struct_get_uint16, (setter) struct_set_uint16, "uint16_t time", (void*)offsetof(lv_spinner_ext_t, time)},
-    {"anim_type", (getter) get_struct_bitfield_spinner_ext_t_anim_type, (setter) set_struct_bitfield_spinner_ext_t_anim_type, "lv_spinner_type_t:2 anim_type", NULL},
-    {"anim_dir", (getter) get_struct_bitfield_spinner_ext_t_anim_dir, (setter) set_struct_bitfield_spinner_ext_t_anim_dir, "lv_spinner_dir_t:1 anim_dir", NULL},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_spinner_ext_t_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.spinner_ext_t",
-    .tp_doc = "lvgl spinner_ext_t",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_spinner_ext_t_init,
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_spinner_ext_t_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-static int pylv_spinner_ext_t_arg_converter(PyObject *obj, void* target) {
-    int isinst;
-    // TODO: support dictionary as argument; create a new struct object in that case
-    isinst = PyObject_IsInstance(obj, (PyObject*)&pylv_spinner_ext_t_Type);
-    if (isinst == 0) {
-        PyErr_Format(PyExc_TypeError, "argument should be of type lv_spinner_ext_t");
-    }
-    if (isinst != 1) {
-        return 0;
-    }
-    *(lv_spinner_ext_t **)target = (void *)((StructObject*)obj) -> data;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
 
@@ -9032,99 +8404,6 @@ static PyTypeObject pylv_page_ext_t_edge_flash_Type = {
     .tp_new = NULL, // sub structs cannot be instantiated
     .tp_dealloc = (destructor) Struct_dealloc,
     .tp_getset = pylv_page_ext_t_edge_flash_getset,
-    .tp_repr = (reprfunc) Struct_repr,
-    .tp_as_buffer = &Struct_bufferprocs
-};
-
-
-
-
-
-static PyObject *
-get_struct_bitfield_table_cell_format_t_s_align(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_table_cell_format_t*)(self->data))->s.align );
-}
-
-static int
-set_struct_bitfield_table_cell_format_t_s_align(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 3)) return -1;
-    ((lv_table_cell_format_t*)(self->data))->s.align = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_table_cell_format_t_s_right_merge(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_table_cell_format_t*)(self->data))->s.right_merge );
-}
-
-static int
-set_struct_bitfield_table_cell_format_t_s_right_merge(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_table_cell_format_t*)(self->data))->s.right_merge = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_table_cell_format_t_s_type(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_table_cell_format_t*)(self->data))->s.type );
-}
-
-static int
-set_struct_bitfield_table_cell_format_t_s_type(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 15)) return -1;
-    ((lv_table_cell_format_t*)(self->data))->s.type = v;
-    return 0;
-}
-
-
-
-static PyObject *
-get_struct_bitfield_table_cell_format_t_s_crop(StructObject *self, void *closure)
-{
-    return PyLong_FromLong(((lv_table_cell_format_t*)(self->data))->s.crop );
-}
-
-static int
-set_struct_bitfield_table_cell_format_t_s_crop(StructObject *self, PyObject *value, void *closure)
-{
-    long v;
-    if (long_to_int(value, &v, 0, 1)) return -1;
-    ((lv_table_cell_format_t*)(self->data))->s.crop = v;
-    return 0;
-}
-
-static PyGetSetDef pylv_table_cell_format_t_s_getset[] = {
-    {"align", (getter) get_struct_bitfield_table_cell_format_t_s_align, (setter) set_struct_bitfield_table_cell_format_t_s_align, "uint8_t:2 align", NULL},
-    {"right_merge", (getter) get_struct_bitfield_table_cell_format_t_s_right_merge, (setter) set_struct_bitfield_table_cell_format_t_s_right_merge, "uint8_t:1 right_merge", NULL},
-    {"type", (getter) get_struct_bitfield_table_cell_format_t_s_type, (setter) set_struct_bitfield_table_cell_format_t_s_type, "uint8_t:4 type", NULL},
-    {"crop", (getter) get_struct_bitfield_table_cell_format_t_s_crop, (setter) set_struct_bitfield_table_cell_format_t_s_crop, "uint8_t:1 crop", NULL},
-    {NULL}
-};
-
-
-static PyTypeObject pylv_table_cell_format_t_s_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.table_cell_format_t_s",
-    .tp_doc = "lvgl table_cell_format_t_s",
-    .tp_basicsize = sizeof(StructObject),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = NULL, // sub structs cannot be instantiated
-    .tp_dealloc = (destructor) Struct_dealloc,
-    .tp_getset = pylv_table_cell_format_t_s_getset,
     .tp_repr = (reprfunc) Struct_repr,
     .tp_as_buffer = &Struct_bufferprocs
 };
@@ -15636,21 +14915,6 @@ pylv_list_get_size(pylv_Obj *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject*
-pylv_list_get_btn_selected(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK
-    lv_obj_t *result = lv_list_get_btn_selected(self->ref);
-    LVGL_UNLOCK
-    PyObject *retobj = pyobj_from_lv(result);
-    
-    return retobj;
-}
-
-static PyObject*
 pylv_list_get_layout(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
     if (!is_alive(self)) return NULL;
@@ -15703,7 +14967,6 @@ static PyMethodDef pylv_list_methods[] = {
     {"get_next_btn", (PyCFunction) pylv_list_get_next_btn, METH_VARARGS | METH_KEYWORDS, "lv_obj_t *lv_list_get_next_btn(const lv_obj_t *list, lv_obj_t *prev_btn)"},
     {"get_btn_index", (PyCFunction) pylv_list_get_btn_index, METH_VARARGS | METH_KEYWORDS, "int32_t lv_list_get_btn_index(const lv_obj_t *list, const lv_obj_t *btn)"},
     {"get_size", (PyCFunction) pylv_list_get_size, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_list_get_size(const lv_obj_t *list)"},
-    {"get_btn_selected", (PyCFunction) pylv_list_get_btn_selected, METH_VARARGS | METH_KEYWORDS, "lv_obj_t *lv_list_get_btn_selected(const lv_obj_t *list)"},
     {"get_layout", (PyCFunction) pylv_list_get_layout, METH_VARARGS | METH_KEYWORDS, "lv_layout_t lv_list_get_layout(lv_obj_t *list)"},
     {"up", (PyCFunction) pylv_list_up, METH_VARARGS | METH_KEYWORDS, "void lv_list_up(const lv_obj_t *list)"},
     {"down", (PyCFunction) pylv_list_down, METH_VARARGS | METH_KEYWORDS, "void lv_list_down(const lv_obj_t *list)"},
@@ -15723,335 +14986,6 @@ static PyTypeObject pylv_list_Type = {
     .tp_dealloc = (destructor) pylv_list_dealloc,
     .tp_methods = pylv_list_methods,
     .tp_weaklistoffset = offsetof(pylv_List, weakreflist),
-};
-
-    
-static void
-pylv_table_dealloc(pylv_Table *self) 
-{
-    // the accompanying lv_obj holds a reference to the Python object, so
-    // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on its parents.
-
-    // Clear weakrefs first before calling any destructors
-    if (self->weakreflist != NULL)
-        PyObject_ClearWeakRefs((PyObject *) self);
-
-    // Release callback object
-    Py_XDECREF(self->event_cb);
-
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static int
-pylv_table_init(pylv_Table *self, PyObject *args, PyObject *kwds) 
-{
-    static char *kwlist[] = {"parent", "copy", NULL};
-    pylv_Obj *parent=NULL;
-    pylv_Table *copy=NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!O!", kwlist, &pylv_obj_Type, &parent, &pylv_table_Type, &copy)) {
-        return -1;
-    }   
-    
-    LVGL_LOCK
-    self->ref = lv_table_create(parent ? parent->ref : NULL, copy ? copy->ref : NULL);
-    self->ref->user_data = self;
-    Py_INCREF(self); // since reference is stored in lv_obj user data
-    install_signal_cb(self);
-    LVGL_UNLOCK
-
-    return 0;
-}
-
-
-static PyObject*
-pylv_table_set_cell_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", "txt", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    const char * txt;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHs", kwlist , &row, &col, &txt)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_cell_value(self->ref, row, col, txt);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_cell_value_fmt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_table_set_cell_value_fmt: variable arguments not supported");
-    return NULL;
-}
-
-static PyObject*
-pylv_table_set_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row_cnt", NULL};
-    unsigned short int row_cnt;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &row_cnt)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_row_cnt(self->ref, row_cnt);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"col_cnt", NULL};
-    unsigned short int col_cnt;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &col_cnt)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_col_cnt(self->ref, col_cnt);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"col_id", "w", NULL};
-    unsigned short int col_id;
-    short int w;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Hh", kwlist , &col_id, &w)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_col_width(self->ref, col_id, w);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", "align", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    unsigned char align;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHb", kwlist , &row, &col, &align)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_cell_align(self->ref, row, col, align);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", "type", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    unsigned char type;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHb", kwlist , &row, &col, &type)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_cell_type(self->ref, row, col, type);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", "crop", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    int crop;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHp", kwlist , &row, &col, &crop)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_cell_crop(self->ref, row, col, crop);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_set_cell_merge_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", "en", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    int en;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHp", kwlist , &row, &col, &en)) return NULL;
-
-    LVGL_LOCK         
-    lv_table_set_cell_merge_right(self->ref, row, col, en);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_table_get_cell_value(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &row, &col)) return NULL;
-
-    LVGL_LOCK        
-    const char* result = lv_table_get_cell_value(self->ref, row, col);
-    LVGL_UNLOCK
-    return Py_BuildValue("s", result);
-}
-
-static PyObject*
-pylv_table_get_row_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_table_get_row_cnt(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_table_get_col_cnt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_table_get_col_cnt(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_table_get_col_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"col_id", NULL};
-    unsigned short int col_id;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &col_id)) return NULL;
-
-    LVGL_LOCK        
-    lv_coord_t result = lv_table_get_col_width(self->ref, col_id);
-    LVGL_UNLOCK
-    return Py_BuildValue("h", result);
-}
-
-static PyObject*
-pylv_table_get_cell_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &row, &col)) return NULL;
-
-    LVGL_LOCK        
-    lv_label_align_t result = lv_table_get_cell_align(self->ref, row, col);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-static PyObject*
-pylv_table_get_cell_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &row, &col)) return NULL;
-
-    LVGL_LOCK        
-    lv_label_align_t result = lv_table_get_cell_type(self->ref, row, col);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-static PyObject*
-pylv_table_get_cell_crop(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &row, &col)) return NULL;
-
-    LVGL_LOCK        
-    lv_label_align_t result = lv_table_get_cell_crop(self->ref, row, col);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-static PyObject*
-pylv_table_get_cell_merge_right(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"row", "col", NULL};
-    unsigned short int row;
-    unsigned short int col;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &row, &col)) return NULL;
-
-    LVGL_LOCK        
-    bool result = lv_table_get_cell_merge_right(self->ref, row, col);
-    LVGL_UNLOCK
-    if (result) {Py_RETURN_TRUE;} else {Py_RETURN_FALSE;}
-}
-
-static PyObject*
-pylv_table_get_pressed_cell(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_table_get_pressed_cell: Parameter type not found >uint16_t*< ");
-    return NULL;
-}
-
-
-static PyMethodDef pylv_table_methods[] = {
-    {"set_cell_value", (PyCFunction) pylv_table_set_cell_value, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_value(lv_obj_t *table, uint16_t row, uint16_t col, const char *txt)"},
-    {"set_cell_value_fmt", (PyCFunction) pylv_table_set_cell_value_fmt, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_value_fmt(lv_obj_t *table, uint16_t row, uint16_t col, const char *fmt, ...)"},
-    {"set_row_cnt", (PyCFunction) pylv_table_set_row_cnt, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_row_cnt(lv_obj_t *table, uint16_t row_cnt)"},
-    {"set_col_cnt", (PyCFunction) pylv_table_set_col_cnt, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_col_cnt(lv_obj_t *table, uint16_t col_cnt)"},
-    {"set_col_width", (PyCFunction) pylv_table_set_col_width, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_col_width(lv_obj_t *table, uint16_t col_id, lv_coord_t w)"},
-    {"set_cell_align", (PyCFunction) pylv_table_set_cell_align, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_align(lv_obj_t *table, uint16_t row, uint16_t col, lv_label_align_t align)"},
-    {"set_cell_type", (PyCFunction) pylv_table_set_cell_type, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_type(lv_obj_t *table, uint16_t row, uint16_t col, uint8_t type)"},
-    {"set_cell_crop", (PyCFunction) pylv_table_set_cell_crop, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_crop(lv_obj_t *table, uint16_t row, uint16_t col, bool crop)"},
-    {"set_cell_merge_right", (PyCFunction) pylv_table_set_cell_merge_right, METH_VARARGS | METH_KEYWORDS, "void lv_table_set_cell_merge_right(lv_obj_t *table, uint16_t row, uint16_t col, bool en)"},
-    {"get_cell_value", (PyCFunction) pylv_table_get_cell_value, METH_VARARGS | METH_KEYWORDS, "const char *lv_table_get_cell_value(lv_obj_t *table, uint16_t row, uint16_t col)"},
-    {"get_row_cnt", (PyCFunction) pylv_table_get_row_cnt, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_table_get_row_cnt(lv_obj_t *table)"},
-    {"get_col_cnt", (PyCFunction) pylv_table_get_col_cnt, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_table_get_col_cnt(lv_obj_t *table)"},
-    {"get_col_width", (PyCFunction) pylv_table_get_col_width, METH_VARARGS | METH_KEYWORDS, "lv_coord_t lv_table_get_col_width(lv_obj_t *table, uint16_t col_id)"},
-    {"get_cell_align", (PyCFunction) pylv_table_get_cell_align, METH_VARARGS | METH_KEYWORDS, "lv_label_align_t lv_table_get_cell_align(lv_obj_t *table, uint16_t row, uint16_t col)"},
-    {"get_cell_type", (PyCFunction) pylv_table_get_cell_type, METH_VARARGS | METH_KEYWORDS, "lv_label_align_t lv_table_get_cell_type(lv_obj_t *table, uint16_t row, uint16_t col)"},
-    {"get_cell_crop", (PyCFunction) pylv_table_get_cell_crop, METH_VARARGS | METH_KEYWORDS, "lv_label_align_t lv_table_get_cell_crop(lv_obj_t *table, uint16_t row, uint16_t col)"},
-    {"get_cell_merge_right", (PyCFunction) pylv_table_get_cell_merge_right, METH_VARARGS | METH_KEYWORDS, "bool lv_table_get_cell_merge_right(lv_obj_t *table, uint16_t row, uint16_t col)"},
-    {"get_pressed_cell", (PyCFunction) pylv_table_get_pressed_cell, METH_VARARGS | METH_KEYWORDS, "lv_res_t lv_table_get_pressed_cell(lv_obj_t *table, uint16_t *row, uint16_t *col)"},
-    {NULL}  /* Sentinel */
-};
-
-static PyTypeObject pylv_table_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.Table",
-    .tp_doc = "lvgl Table",
-    .tp_basicsize = sizeof(pylv_Table),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_table_init,
-    .tp_dealloc = (destructor) pylv_table_dealloc,
-    .tp_methods = pylv_table_methods,
-    .tp_weaklistoffset = offsetof(pylv_Table, weakreflist),
 };
 
     
@@ -16598,356 +15532,6 @@ static PyTypeObject pylv_slider_Type = {
 
     
 static void
-pylv_btnmatrix_dealloc(pylv_Btnmatrix *self) 
-{
-    // the accompanying lv_obj holds a reference to the Python object, so
-    // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on its parents.
-
-    // Clear weakrefs first before calling any destructors
-    if (self->weakreflist != NULL)
-        PyObject_ClearWeakRefs((PyObject *) self);
-
-    // Release callback object
-    Py_XDECREF(self->event_cb);
-
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static int
-pylv_btnmatrix_init(pylv_Btnmatrix *self, PyObject *args, PyObject *kwds) 
-{
-    static char *kwlist[] = {"parent", "copy", NULL};
-    pylv_Obj *parent=NULL;
-    pylv_Btnmatrix *copy=NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!O!", kwlist, &pylv_obj_Type, &parent, &pylv_btnmatrix_Type, &copy)) {
-        return -1;
-    }   
-    
-    LVGL_LOCK
-    self->ref = lv_btnmatrix_create(parent ? parent->ref : NULL, copy ? copy->ref : NULL);
-    self->ref->user_data = self;
-    Py_INCREF(self); // since reference is stored in lv_obj user data
-    install_signal_cb(self);
-    LVGL_UNLOCK
-
-    return 0;
-}
-
-
-static PyObject*
-pylv_btnmatrix_set_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"map", NULL};
-    char map;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "c", kwlist , &map)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_map(self->ref, map);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_ctrl_map(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"ctrl_map", NULL};
-    unsigned short int ctrl_map;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl_map)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_ctrl_map(self->ref, ctrl_map);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"id", NULL};
-    unsigned short int id;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &id)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_focused_btn(self->ref, id);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"en", NULL};
-    int en;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_recolor(self->ref, en);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_id", "ctrl", NULL};
-    unsigned short int btn_id;
-    unsigned short int ctrl;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &btn_id, &ctrl)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_btn_ctrl(self->ref, btn_id, ctrl);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_clear_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_id", "ctrl", NULL};
-    unsigned short int btn_id;
-    unsigned short int ctrl;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &btn_id, &ctrl)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_clear_btn_ctrl(self->ref, btn_id, ctrl);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"ctrl", NULL};
-    unsigned short int ctrl;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_btn_ctrl_all(self->ref, ctrl);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_clear_btn_ctrl_all(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"ctrl", NULL};
-    unsigned short int ctrl;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &ctrl)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_clear_btn_ctrl_all(self->ref, ctrl);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_btn_width(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_id", "width", NULL};
-    unsigned short int btn_id;
-    unsigned char width;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Hb", kwlist , &btn_id, &width)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_btn_width(self->ref, btn_id, width);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"one_chk", NULL};
-    int one_chk;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &one_chk)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_one_check(self->ref, one_chk);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_set_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"align", NULL};
-    unsigned char align;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &align)) return NULL;
-
-    LVGL_LOCK         
-    lv_btnmatrix_set_align(self->ref, align);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_btnmatrix_get_map_array(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_btnmatrix_get_map_array: Return type not found >const char**< ");
-    return NULL;
-}
-
-static PyObject*
-pylv_btnmatrix_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    bool result = lv_btnmatrix_get_recolor(self->ref);
-    LVGL_UNLOCK
-    if (result) {Py_RETURN_TRUE;} else {Py_RETURN_FALSE;}
-}
-
-static PyObject*
-pylv_btnmatrix_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_btnmatrix_get_active_btn(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_btnmatrix_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    const char* result = lv_btnmatrix_get_active_btn_text(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("s", result);
-}
-
-static PyObject*
-pylv_btnmatrix_get_focused_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_btnmatrix_get_focused_btn(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_btnmatrix_get_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_id", NULL};
-    unsigned short int btn_id;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &btn_id)) return NULL;
-
-    LVGL_LOCK        
-    const char* result = lv_btnmatrix_get_btn_text(self->ref, btn_id);
-    LVGL_UNLOCK
-    return Py_BuildValue("s", result);
-}
-
-static PyObject*
-pylv_btnmatrix_get_btn_ctrl(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_id", "ctrl", NULL};
-    unsigned short int btn_id;
-    unsigned short int ctrl;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "HH", kwlist , &btn_id, &ctrl)) return NULL;
-
-    LVGL_LOCK        
-    bool result = lv_btnmatrix_get_btn_ctrl(self->ref, btn_id, ctrl);
-    LVGL_UNLOCK
-    if (result) {Py_RETURN_TRUE;} else {Py_RETURN_FALSE;}
-}
-
-static PyObject*
-pylv_btnmatrix_get_one_check(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    bool result = lv_btnmatrix_get_one_check(self->ref);
-    LVGL_UNLOCK
-    if (result) {Py_RETURN_TRUE;} else {Py_RETURN_FALSE;}
-}
-
-static PyObject*
-pylv_btnmatrix_get_align(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    lv_label_align_t result = lv_btnmatrix_get_align(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-
-static PyMethodDef pylv_btnmatrix_methods[] = {
-    {"set_map", (PyCFunction) pylv_btnmatrix_set_map, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_map(lv_obj_t *btnm, const char *map[])"},
-    {"set_ctrl_map", (PyCFunction) pylv_btnmatrix_set_ctrl_map, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_ctrl_map(lv_obj_t *btnm, const lv_btnmatrix_ctrl_t ctrl_map[])"},
-    {"set_focused_btn", (PyCFunction) pylv_btnmatrix_set_focused_btn, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_focused_btn(lv_obj_t *btnm, uint16_t id)"},
-    {"set_recolor", (PyCFunction) pylv_btnmatrix_set_recolor, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_recolor(const lv_obj_t *btnm, bool en)"},
-    {"set_btn_ctrl", (PyCFunction) pylv_btnmatrix_set_btn_ctrl, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_btn_ctrl(lv_obj_t *btnm, uint16_t btn_id, lv_btnmatrix_ctrl_t ctrl)"},
-    {"clear_btn_ctrl", (PyCFunction) pylv_btnmatrix_clear_btn_ctrl, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_clear_btn_ctrl(const lv_obj_t *btnm, uint16_t btn_id, lv_btnmatrix_ctrl_t ctrl)"},
-    {"set_btn_ctrl_all", (PyCFunction) pylv_btnmatrix_set_btn_ctrl_all, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_btn_ctrl_all(lv_obj_t *btnm, lv_btnmatrix_ctrl_t ctrl)"},
-    {"clear_btn_ctrl_all", (PyCFunction) pylv_btnmatrix_clear_btn_ctrl_all, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_clear_btn_ctrl_all(lv_obj_t *btnm, lv_btnmatrix_ctrl_t ctrl)"},
-    {"set_btn_width", (PyCFunction) pylv_btnmatrix_set_btn_width, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_btn_width(lv_obj_t *btnm, uint16_t btn_id, uint8_t width)"},
-    {"set_one_check", (PyCFunction) pylv_btnmatrix_set_one_check, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_one_check(lv_obj_t *btnm, bool one_chk)"},
-    {"set_align", (PyCFunction) pylv_btnmatrix_set_align, METH_VARARGS | METH_KEYWORDS, "void lv_btnmatrix_set_align(lv_obj_t *btnm, lv_label_align_t align)"},
-    {"get_map_array", (PyCFunction) pylv_btnmatrix_get_map_array, METH_VARARGS | METH_KEYWORDS, "const char **lv_btnmatrix_get_map_array(const lv_obj_t *btnm)"},
-    {"get_recolor", (PyCFunction) pylv_btnmatrix_get_recolor, METH_VARARGS | METH_KEYWORDS, "bool lv_btnmatrix_get_recolor(const lv_obj_t *btnm)"},
-    {"get_active_btn", (PyCFunction) pylv_btnmatrix_get_active_btn, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_btnmatrix_get_active_btn(const lv_obj_t *btnm)"},
-    {"get_active_btn_text", (PyCFunction) pylv_btnmatrix_get_active_btn_text, METH_VARARGS | METH_KEYWORDS, "const char *lv_btnmatrix_get_active_btn_text(const lv_obj_t *btnm)"},
-    {"get_focused_btn", (PyCFunction) pylv_btnmatrix_get_focused_btn, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_btnmatrix_get_focused_btn(const lv_obj_t *btnm)"},
-    {"get_btn_text", (PyCFunction) pylv_btnmatrix_get_btn_text, METH_VARARGS | METH_KEYWORDS, "const char *lv_btnmatrix_get_btn_text(const lv_obj_t *btnm, uint16_t btn_id)"},
-    {"get_btn_ctrl", (PyCFunction) pylv_btnmatrix_get_btn_ctrl, METH_VARARGS | METH_KEYWORDS, "bool lv_btnmatrix_get_btn_ctrl(lv_obj_t *btnm, uint16_t btn_id, lv_btnmatrix_ctrl_t ctrl)"},
-    {"get_one_check", (PyCFunction) pylv_btnmatrix_get_one_check, METH_VARARGS | METH_KEYWORDS, "bool lv_btnmatrix_get_one_check(const lv_obj_t *btnm)"},
-    {"get_align", (PyCFunction) pylv_btnmatrix_get_align, METH_VARARGS | METH_KEYWORDS, "lv_label_align_t lv_btnmatrix_get_align(const lv_obj_t *btnm)"},
-    {NULL}  /* Sentinel */
-};
-
-static PyTypeObject pylv_btnmatrix_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.Btnmatrix",
-    .tp_doc = "lvgl Btnmatrix",
-    .tp_basicsize = sizeof(pylv_Btnmatrix),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_btnmatrix_init,
-    .tp_dealloc = (destructor) pylv_btnmatrix_dealloc,
-    .tp_methods = pylv_btnmatrix_methods,
-    .tp_weaklistoffset = offsetof(pylv_Btnmatrix, weakreflist),
-};
-
-    
-static void
 pylv_roller_dealloc(pylv_Roller *self) 
 {
     // the accompanying lv_obj holds a reference to the Python object, so
@@ -17345,331 +15929,6 @@ static PyTypeObject pylv_canvas_Type = {
     .tp_dealloc = (destructor) pylv_canvas_dealloc,
     .tp_methods = pylv_canvas_methods,
     .tp_weaklistoffset = offsetof(pylv_Canvas, weakreflist),
-};
-
-    
-static void
-pylv_msgbox_dealloc(pylv_Msgbox *self) 
-{
-    // the accompanying lv_obj holds a reference to the Python object, so
-    // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on its parents.
-
-    // Clear weakrefs first before calling any destructors
-    if (self->weakreflist != NULL)
-        PyObject_ClearWeakRefs((PyObject *) self);
-
-    // Release callback object
-    Py_XDECREF(self->event_cb);
-
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static int
-pylv_msgbox_init(pylv_Msgbox *self, PyObject *args, PyObject *kwds) 
-{
-    static char *kwlist[] = {"parent", "copy", NULL};
-    pylv_Obj *parent=NULL;
-    pylv_Msgbox *copy=NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!O!", kwlist, &pylv_obj_Type, &parent, &pylv_msgbox_Type, &copy)) {
-        return -1;
-    }   
-    
-    LVGL_LOCK
-    self->ref = lv_msgbox_create(parent ? parent->ref : NULL, copy ? copy->ref : NULL);
-    self->ref->user_data = self;
-    Py_INCREF(self); // since reference is stored in lv_obj user data
-    install_signal_cb(self);
-    LVGL_UNLOCK
-
-    return 0;
-}
-
-
-static PyObject*
-pylv_msgbox_add_btns(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"btn_mapaction", NULL};
-    char btn_mapaction;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "c", kwlist , &btn_mapaction)) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_add_btns(self->ref, btn_mapaction);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_set_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"txt", NULL};
-    const char * txt;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &txt)) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_set_text(self->ref, txt);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_set_text_fmt(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_msgbox_set_text_fmt: variable arguments not supported");
-    return NULL;
-}
-
-static PyObject*
-pylv_msgbox_set_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"anim_time", NULL};
-    unsigned short int anim_time;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &anim_time)) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_set_anim_time(self->ref, anim_time);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_start_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"delay", NULL};
-    unsigned short int delay;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &delay)) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_start_auto_close(self->ref, delay);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_stop_auto_close(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_stop_auto_close(self->ref);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_set_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"en", NULL};
-    int en;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "p", kwlist , &en)) return NULL;
-
-    LVGL_LOCK         
-    lv_msgbox_set_recolor(self->ref, en);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_msgbox_get_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    const char* result = lv_msgbox_get_text(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("s", result);
-}
-
-static PyObject*
-pylv_msgbox_get_active_btn(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_msgbox_get_active_btn(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_msgbox_get_active_btn_text(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    const char* result = lv_msgbox_get_active_btn_text(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("s", result);
-}
-
-static PyObject*
-pylv_msgbox_get_anim_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_msgbox_get_anim_time(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_msgbox_get_recolor(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    bool result = lv_msgbox_get_recolor(self->ref);
-    LVGL_UNLOCK
-    if (result) {Py_RETURN_TRUE;} else {Py_RETURN_FALSE;}
-}
-
-static PyObject*
-pylv_msgbox_get_btnmatrix(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK
-    lv_obj_t *result = lv_msgbox_get_btnmatrix(self->ref);
-    LVGL_UNLOCK
-    PyObject *retobj = pyobj_from_lv(result);
-    
-    return retobj;
-}
-
-
-static PyMethodDef pylv_msgbox_methods[] = {
-    {"add_btns", (PyCFunction) pylv_msgbox_add_btns, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_add_btns(lv_obj_t *mbox, const char *btn_mapaction[])"},
-    {"set_text", (PyCFunction) pylv_msgbox_set_text, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_set_text(lv_obj_t *mbox, const char *txt)"},
-    {"set_text_fmt", (PyCFunction) pylv_msgbox_set_text_fmt, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_set_text_fmt(lv_obj_t *mbox, const char *fmt, ...)"},
-    {"set_anim_time", (PyCFunction) pylv_msgbox_set_anim_time, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_set_anim_time(lv_obj_t *mbox, uint16_t anim_time)"},
-    {"start_auto_close", (PyCFunction) pylv_msgbox_start_auto_close, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_start_auto_close(lv_obj_t *mbox, uint16_t delay)"},
-    {"stop_auto_close", (PyCFunction) pylv_msgbox_stop_auto_close, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_stop_auto_close(lv_obj_t *mbox)"},
-    {"set_recolor", (PyCFunction) pylv_msgbox_set_recolor, METH_VARARGS | METH_KEYWORDS, "void lv_msgbox_set_recolor(lv_obj_t *mbox, bool en)"},
-    {"get_text", (PyCFunction) pylv_msgbox_get_text, METH_VARARGS | METH_KEYWORDS, "const char *lv_msgbox_get_text(const lv_obj_t *mbox)"},
-    {"get_active_btn", (PyCFunction) pylv_msgbox_get_active_btn, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_msgbox_get_active_btn(lv_obj_t *mbox)"},
-    {"get_active_btn_text", (PyCFunction) pylv_msgbox_get_active_btn_text, METH_VARARGS | METH_KEYWORDS, "const char *lv_msgbox_get_active_btn_text(lv_obj_t *mbox)"},
-    {"get_anim_time", (PyCFunction) pylv_msgbox_get_anim_time, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_msgbox_get_anim_time(const lv_obj_t *mbox)"},
-    {"get_recolor", (PyCFunction) pylv_msgbox_get_recolor, METH_VARARGS | METH_KEYWORDS, "bool lv_msgbox_get_recolor(const lv_obj_t *mbox)"},
-    {"get_btnmatrix", (PyCFunction) pylv_msgbox_get_btnmatrix, METH_VARARGS | METH_KEYWORDS, "lv_obj_t *lv_msgbox_get_btnmatrix(lv_obj_t *mbox)"},
-    {NULL}  /* Sentinel */
-};
-
-static PyTypeObject pylv_msgbox_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.Msgbox",
-    .tp_doc = "lvgl Msgbox",
-    .tp_basicsize = sizeof(pylv_Msgbox),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_msgbox_init,
-    .tp_dealloc = (destructor) pylv_msgbox_dealloc,
-    .tp_methods = pylv_msgbox_methods,
-    .tp_weaklistoffset = offsetof(pylv_Msgbox, weakreflist),
-};
-
-    
-static void
-pylv_objmask_dealloc(pylv_Objmask *self) 
-{
-    // the accompanying lv_obj holds a reference to the Python object, so
-    // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on its parents.
-
-    // Clear weakrefs first before calling any destructors
-    if (self->weakreflist != NULL)
-        PyObject_ClearWeakRefs((PyObject *) self);
-
-    // Release callback object
-    Py_XDECREF(self->event_cb);
-
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static int
-pylv_objmask_init(pylv_Objmask *self, PyObject *args, PyObject *kwds) 
-{
-    static char *kwlist[] = {"parent", "copy", NULL};
-    pylv_Obj *parent=NULL;
-    pylv_Objmask *copy=NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!O!", kwlist, &pylv_obj_Type, &parent, &pylv_objmask_Type, &copy)) {
-        return -1;
-    }   
-    
-    LVGL_LOCK
-    self->ref = lv_objmask_create(parent ? parent->ref : NULL, copy ? copy->ref : NULL);
-    self->ref->user_data = self;
-    Py_INCREF(self); // since reference is stored in lv_obj user data
-    install_signal_cb(self);
-    LVGL_UNLOCK
-
-    return 0;
-}
-
-
-static PyObject*
-pylv_objmask_add_mask(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_objmask_add_mask: Parameter type not found >void*< ");
-    return NULL;
-}
-
-static PyObject*
-pylv_objmask_update_mask(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_objmask_update_mask: Parameter type not found >lv_objmask_mask_t*< ");
-    return NULL;
-}
-
-static PyObject*
-pylv_objmask_remove_mask(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    PyErr_SetString(PyExc_NotImplementedError, "not implemented: lv_objmask_remove_mask: Parameter type not found >lv_objmask_mask_t*< ");
-    return NULL;
-}
-
-
-static PyMethodDef pylv_objmask_methods[] = {
-    {"add_mask", (PyCFunction) pylv_objmask_add_mask, METH_VARARGS | METH_KEYWORDS, "lv_objmask_mask_t *lv_objmask_add_mask(lv_obj_t *objmask, void *param)"},
-    {"update_mask", (PyCFunction) pylv_objmask_update_mask, METH_VARARGS | METH_KEYWORDS, "void lv_objmask_update_mask(lv_obj_t *objmask, lv_objmask_mask_t *mask, void *param)"},
-    {"remove_mask", (PyCFunction) pylv_objmask_remove_mask, METH_VARARGS | METH_KEYWORDS, "void lv_objmask_remove_mask(lv_obj_t *objmask, lv_objmask_mask_t *mask)"},
-    {NULL}  /* Sentinel */
-};
-
-static PyTypeObject pylv_objmask_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.Objmask",
-    .tp_doc = "lvgl Objmask",
-    .tp_basicsize = sizeof(pylv_Objmask),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_objmask_init,
-    .tp_dealloc = (destructor) pylv_objmask_dealloc,
-    .tp_methods = pylv_objmask_methods,
-    .tp_weaklistoffset = offsetof(pylv_Objmask, weakreflist),
 };
 
     
@@ -18172,181 +16431,6 @@ static PyTypeObject pylv_arc_Type = {
     .tp_weaklistoffset = offsetof(pylv_Arc, weakreflist),
 };
 
-    
-static void
-pylv_spinner_dealloc(pylv_Spinner *self) 
-{
-    // the accompanying lv_obj holds a reference to the Python object, so
-    // dealloc can only take place if the lv_obj has already been deleted using
-    // Obj.del_() or .clean() on its parents.
-
-    // Clear weakrefs first before calling any destructors
-    if (self->weakreflist != NULL)
-        PyObject_ClearWeakRefs((PyObject *) self);
-
-    // Release callback object
-    Py_XDECREF(self->event_cb);
-
-    Py_TYPE(self)->tp_free((PyObject *) self);
-}
-
-static int
-pylv_spinner_init(pylv_Spinner *self, PyObject *args, PyObject *kwds) 
-{
-    static char *kwlist[] = {"parent", "copy", NULL};
-    pylv_Obj *parent=NULL;
-    pylv_Spinner *copy=NULL;
-    
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O!O!", kwlist, &pylv_obj_Type, &parent, &pylv_spinner_Type, &copy)) {
-        return -1;
-    }   
-    
-    LVGL_LOCK
-    self->ref = lv_spinner_create(parent ? parent->ref : NULL, copy ? copy->ref : NULL);
-    self->ref->user_data = self;
-    Py_INCREF(self); // since reference is stored in lv_obj user data
-    install_signal_cb(self);
-    LVGL_UNLOCK
-
-    return 0;
-}
-
-
-static PyObject*
-pylv_spinner_set_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"deg", NULL};
-    short int deg;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "h", kwlist , &deg)) return NULL;
-
-    LVGL_LOCK         
-    lv_spinner_set_arc_length(self->ref, deg);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_spinner_set_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"time", NULL};
-    unsigned short int time;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist , &time)) return NULL;
-
-    LVGL_LOCK         
-    lv_spinner_set_spin_time(self->ref, time);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_spinner_set_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"type", NULL};
-    unsigned char type;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &type)) return NULL;
-
-    LVGL_LOCK         
-    lv_spinner_set_type(self->ref, type);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_spinner_set_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"dir", NULL};
-    unsigned char dir;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b", kwlist , &dir)) return NULL;
-
-    LVGL_LOCK         
-    lv_spinner_set_dir(self->ref, dir);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
-
-static PyObject*
-pylv_spinner_get_arc_length(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    lv_anim_value_t result = lv_spinner_get_arc_length(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("h", result);
-}
-
-static PyObject*
-pylv_spinner_get_spin_time(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    uint16_t result = lv_spinner_get_spin_time(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("H", result);
-}
-
-static PyObject*
-pylv_spinner_get_type(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    lv_spinner_type_t result = lv_spinner_get_type(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-static PyObject*
-pylv_spinner_get_dir(pylv_Obj *self, PyObject *args, PyObject *kwds)
-{
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist )) return NULL;
-
-    LVGL_LOCK        
-    lv_spinner_dir_t result = lv_spinner_get_dir(self->ref);
-    LVGL_UNLOCK
-    return Py_BuildValue("b", result);
-}
-
-
-static PyMethodDef pylv_spinner_methods[] = {
-    {"set_arc_length", (PyCFunction) pylv_spinner_set_arc_length, METH_VARARGS | METH_KEYWORDS, "void lv_spinner_set_arc_length(lv_obj_t *spinner, lv_anim_value_t deg)"},
-    {"set_spin_time", (PyCFunction) pylv_spinner_set_spin_time, METH_VARARGS | METH_KEYWORDS, "void lv_spinner_set_spin_time(lv_obj_t *spinner, uint16_t time)"},
-    {"set_type", (PyCFunction) pylv_spinner_set_type, METH_VARARGS | METH_KEYWORDS, "void lv_spinner_set_type(lv_obj_t *spinner, lv_spinner_type_t type)"},
-    {"set_dir", (PyCFunction) pylv_spinner_set_dir, METH_VARARGS | METH_KEYWORDS, "void lv_spinner_set_dir(lv_obj_t *spinner, lv_spinner_dir_t dir)"},
-    {"get_arc_length", (PyCFunction) pylv_spinner_get_arc_length, METH_VARARGS | METH_KEYWORDS, "lv_anim_value_t lv_spinner_get_arc_length(const lv_obj_t *spinner)"},
-    {"get_spin_time", (PyCFunction) pylv_spinner_get_spin_time, METH_VARARGS | METH_KEYWORDS, "uint16_t lv_spinner_get_spin_time(const lv_obj_t *spinner)"},
-    {"get_type", (PyCFunction) pylv_spinner_get_type, METH_VARARGS | METH_KEYWORDS, "lv_spinner_type_t lv_spinner_get_type(lv_obj_t *spinner)"},
-    {"get_dir", (PyCFunction) pylv_spinner_get_dir, METH_VARARGS | METH_KEYWORDS, "lv_spinner_dir_t lv_spinner_get_dir(lv_obj_t *spinner)"},
-    {NULL}  /* Sentinel */
-};
-
-static PyTypeObject pylv_spinner_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "lvgl.Spinner",
-    .tp_doc = "lvgl Spinner",
-    .tp_basicsize = sizeof(pylv_Spinner),
-    .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_new = PyType_GenericNew,
-    .tp_init = (initproc) pylv_spinner_init,
-    .tp_dealloc = (destructor) pylv_spinner_dealloc,
-    .tp_methods = pylv_spinner_methods,
-    .tp_weaklistoffset = offsetof(pylv_Spinner, weakreflist),
-};
-
 
 
 /****************************************************************
@@ -18527,9 +16611,6 @@ PyInit_lvgl(void) {
     pylv_list_Type.tp_base = &pylv_page_Type;
     if (PyType_Ready(&pylv_list_Type) < 0) return NULL;
 
-    pylv_table_Type.tp_base = &pylv_obj_Type;
-    if (PyType_Ready(&pylv_table_Type) < 0) return NULL;
-
     pylv_checkbox_Type.tp_base = &pylv_btn_Type;
     if (PyType_Ready(&pylv_checkbox_Type) < 0) return NULL;
 
@@ -18539,29 +16620,17 @@ PyInit_lvgl(void) {
     pylv_slider_Type.tp_base = &pylv_bar_Type;
     if (PyType_Ready(&pylv_slider_Type) < 0) return NULL;
 
-    pylv_btnmatrix_Type.tp_base = &pylv_obj_Type;
-    if (PyType_Ready(&pylv_btnmatrix_Type) < 0) return NULL;
-
     pylv_roller_Type.tp_base = &pylv_page_Type;
     if (PyType_Ready(&pylv_roller_Type) < 0) return NULL;
 
     pylv_canvas_Type.tp_base = &pylv_img_Type;
     if (PyType_Ready(&pylv_canvas_Type) < 0) return NULL;
 
-    pylv_msgbox_Type.tp_base = &pylv_cont_Type;
-    if (PyType_Ready(&pylv_msgbox_Type) < 0) return NULL;
-
-    pylv_objmask_Type.tp_base = &pylv_cont_Type;
-    if (PyType_Ready(&pylv_objmask_Type) < 0) return NULL;
-
     pylv_switch_Type.tp_base = &pylv_bar_Type;
     if (PyType_Ready(&pylv_switch_Type) < 0) return NULL;
 
     pylv_arc_Type.tp_base = &pylv_obj_Type;
     if (PyType_Ready(&pylv_arc_Type) < 0) return NULL;
-
-    pylv_spinner_Type.tp_base = &pylv_arc_Type;
-    if (PyType_Ready(&pylv_spinner_Type) < 0) return NULL;
 
 
     if (PyType_Ready(&Blob_Type) < 0) return NULL;
@@ -18658,8 +16727,6 @@ PyInit_lvgl(void) {
 
     if (PyType_Ready(&pylv_get_state_info_t_Type) < 0) return NULL;
 
-    if (PyType_Ready(&pylv_group_t_Type) < 0) return NULL;
-
     if (PyType_Ready(&pylv_theme_t_Type) < 0) return NULL;
 
     if (PyType_Ready(&pylv_font_fmt_txt_glyph_dsc_t_Type) < 0) return NULL;
@@ -18686,10 +16753,6 @@ PyInit_lvgl(void) {
 
     if (PyType_Ready(&pylv_list_ext_t_Type) < 0) return NULL;
 
-    if (PyType_Ready(&pylv_table_cell_format_t_Type) < 0) return NULL;
-
-    if (PyType_Ready(&pylv_table_ext_t_Type) < 0) return NULL;
-
     if (PyType_Ready(&pylv_checkbox_ext_t_Type) < 0) return NULL;
 
     if (PyType_Ready(&pylv_bar_anim_t_Type) < 0) return NULL;
@@ -18698,23 +16761,13 @@ PyInit_lvgl(void) {
 
     if (PyType_Ready(&pylv_slider_ext_t_Type) < 0) return NULL;
 
-    if (PyType_Ready(&pylv_btnmatrix_ext_t_Type) < 0) return NULL;
-
     if (PyType_Ready(&pylv_roller_ext_t_Type) < 0) return NULL;
 
     if (PyType_Ready(&pylv_canvas_ext_t_Type) < 0) return NULL;
 
-    if (PyType_Ready(&pylv_msgbox_ext_t_Type) < 0) return NULL;
-
-    if (PyType_Ready(&pylv_objmask_mask_t_Type) < 0) return NULL;
-
-    if (PyType_Ready(&pylv_objmask_ext_t_Type) < 0) return NULL;
-
     if (PyType_Ready(&pylv_switch_ext_t_Type) < 0) return NULL;
 
     if (PyType_Ready(&pylv_arc_ext_t_Type) < 0) return NULL;
-
-    if (PyType_Ready(&pylv_spinner_ext_t_Type) < 0) return NULL;
 
     if (PyType_Ready(&pylv_img_cache_entry_t_Type) < 0) return NULL;
 
@@ -18754,8 +16807,6 @@ PyInit_lvgl(void) {
 
     if (PyType_Ready(&pylv_page_ext_t_edge_flash_Type) < 0) return NULL;
 
-    if (PyType_Ready(&pylv_table_cell_format_t_s_Type) < 0) return NULL;
-
 
     struct_dict = PyDict_New();
     if (!struct_dict) return NULL;
@@ -18787,9 +16838,6 @@ PyInit_lvgl(void) {
     Py_INCREF(&pylv_list_Type);
     PyModule_AddObject(module, "List", (PyObject *) &pylv_list_Type); 
 
-    Py_INCREF(&pylv_table_Type);
-    PyModule_AddObject(module, "Table", (PyObject *) &pylv_table_Type); 
-
     Py_INCREF(&pylv_checkbox_Type);
     PyModule_AddObject(module, "Checkbox", (PyObject *) &pylv_checkbox_Type); 
 
@@ -18799,29 +16847,17 @@ PyInit_lvgl(void) {
     Py_INCREF(&pylv_slider_Type);
     PyModule_AddObject(module, "Slider", (PyObject *) &pylv_slider_Type); 
 
-    Py_INCREF(&pylv_btnmatrix_Type);
-    PyModule_AddObject(module, "Btnmatrix", (PyObject *) &pylv_btnmatrix_Type); 
-
     Py_INCREF(&pylv_roller_Type);
     PyModule_AddObject(module, "Roller", (PyObject *) &pylv_roller_Type); 
 
     Py_INCREF(&pylv_canvas_Type);
     PyModule_AddObject(module, "Canvas", (PyObject *) &pylv_canvas_Type); 
 
-    Py_INCREF(&pylv_msgbox_Type);
-    PyModule_AddObject(module, "Msgbox", (PyObject *) &pylv_msgbox_Type); 
-
-    Py_INCREF(&pylv_objmask_Type);
-    PyModule_AddObject(module, "Objmask", (PyObject *) &pylv_objmask_Type); 
-
     Py_INCREF(&pylv_switch_Type);
     PyModule_AddObject(module, "Switch", (PyObject *) &pylv_switch_Type); 
 
     Py_INCREF(&pylv_arc_Type);
     PyModule_AddObject(module, "Arc", (PyObject *) &pylv_arc_Type); 
-
-    Py_INCREF(&pylv_spinner_Type);
-    PyModule_AddObject(module, "Spinner", (PyObject *) &pylv_spinner_Type); 
 
 
 
@@ -18963,9 +16999,6 @@ PyInit_lvgl(void) {
     Py_INCREF(&pylv_get_state_info_t_Type);
     PyModule_AddObject(module, "get_state_info_t", (PyObject *) &pylv_get_state_info_t_Type); 
 
-    Py_INCREF(&pylv_group_t_Type);
-    PyModule_AddObject(module, "group_t", (PyObject *) &pylv_group_t_Type); 
-
     Py_INCREF(&pylv_theme_t_Type);
     PyModule_AddObject(module, "theme_t", (PyObject *) &pylv_theme_t_Type); 
 
@@ -19005,12 +17038,6 @@ PyInit_lvgl(void) {
     Py_INCREF(&pylv_list_ext_t_Type);
     PyModule_AddObject(module, "list_ext_t", (PyObject *) &pylv_list_ext_t_Type); 
 
-    Py_INCREF(&pylv_table_cell_format_t_Type);
-    PyModule_AddObject(module, "table_cell_format_t", (PyObject *) &pylv_table_cell_format_t_Type); 
-
-    Py_INCREF(&pylv_table_ext_t_Type);
-    PyModule_AddObject(module, "table_ext_t", (PyObject *) &pylv_table_ext_t_Type); 
-
     Py_INCREF(&pylv_checkbox_ext_t_Type);
     PyModule_AddObject(module, "checkbox_ext_t", (PyObject *) &pylv_checkbox_ext_t_Type); 
 
@@ -19023,32 +17050,17 @@ PyInit_lvgl(void) {
     Py_INCREF(&pylv_slider_ext_t_Type);
     PyModule_AddObject(module, "slider_ext_t", (PyObject *) &pylv_slider_ext_t_Type); 
 
-    Py_INCREF(&pylv_btnmatrix_ext_t_Type);
-    PyModule_AddObject(module, "btnmatrix_ext_t", (PyObject *) &pylv_btnmatrix_ext_t_Type); 
-
     Py_INCREF(&pylv_roller_ext_t_Type);
     PyModule_AddObject(module, "roller_ext_t", (PyObject *) &pylv_roller_ext_t_Type); 
 
     Py_INCREF(&pylv_canvas_ext_t_Type);
     PyModule_AddObject(module, "canvas_ext_t", (PyObject *) &pylv_canvas_ext_t_Type); 
 
-    Py_INCREF(&pylv_msgbox_ext_t_Type);
-    PyModule_AddObject(module, "msgbox_ext_t", (PyObject *) &pylv_msgbox_ext_t_Type); 
-
-    Py_INCREF(&pylv_objmask_mask_t_Type);
-    PyModule_AddObject(module, "objmask_mask_t", (PyObject *) &pylv_objmask_mask_t_Type); 
-
-    Py_INCREF(&pylv_objmask_ext_t_Type);
-    PyModule_AddObject(module, "objmask_ext_t", (PyObject *) &pylv_objmask_ext_t_Type); 
-
     Py_INCREF(&pylv_switch_ext_t_Type);
     PyModule_AddObject(module, "switch_ext_t", (PyObject *) &pylv_switch_ext_t_Type); 
 
     Py_INCREF(&pylv_arc_ext_t_Type);
     PyModule_AddObject(module, "arc_ext_t", (PyObject *) &pylv_arc_ext_t_Type); 
-
-    Py_INCREF(&pylv_spinner_ext_t_Type);
-    PyModule_AddObject(module, "spinner_ext_t", (PyObject *) &pylv_spinner_ext_t_Type); 
 
     Py_INCREF(&pylv_img_cache_entry_t_Type);
     PyModule_AddObject(module, "img_cache_entry_t", (PyObject *) &pylv_img_cache_entry_t_Type); 
@@ -19084,7 +17096,6 @@ PyInit_lvgl(void) {
     PyModule_AddObject(module, "STATE", build_constclass('d', "STATE", "DEFAULT", LV_STATE_DEFAULT, "CHECKED", LV_STATE_CHECKED, "FOCUSED", LV_STATE_FOCUSED, "EDITED", LV_STATE_EDITED, "HOVERED", LV_STATE_HOVERED, "PRESSED", LV_STATE_PRESSED, "DISABLED", LV_STATE_DISABLED, NULL));
     PyModule_AddObject(module, "OBJ_PART", build_constclass('d', "OBJ_PART", "MAIN", LV_OBJ_PART_MAIN, "ALL", LV_OBJ_PART_ALL, NULL));
     PyModule_AddObject(module, "KEY", build_constclass('d', "KEY", "UP", LV_KEY_UP, "DOWN", LV_KEY_DOWN, "RIGHT", LV_KEY_RIGHT, "LEFT", LV_KEY_LEFT, "ESC", LV_KEY_ESC, "DEL", LV_KEY_DEL, "BACKSPACE", LV_KEY_BACKSPACE, "ENTER", LV_KEY_ENTER, "NEXT", LV_KEY_NEXT, "PREV", LV_KEY_PREV, "HOME", LV_KEY_HOME, "END", LV_KEY_END, NULL));
-    PyModule_AddObject(module, "GROUP_REFOCUS_POLICY", build_constclass('d', "GROUP_REFOCUS_POLICY", "NEXT", LV_GROUP_REFOCUS_POLICY_NEXT, "PREV", LV_GROUP_REFOCUS_POLICY_PREV, NULL));
     PyModule_AddObject(module, "FONT_FMT_TXT_CMAP", build_constclass('d', "FONT_FMT_TXT_CMAP", "FORMAT0_FULL", LV_FONT_FMT_TXT_CMAP_FORMAT0_FULL, "SPARSE_FULL", LV_FONT_FMT_TXT_CMAP_SPARSE_FULL, "FORMAT0_TINY", LV_FONT_FMT_TXT_CMAP_FORMAT0_TINY, "SPARSE_TINY", LV_FONT_FMT_TXT_CMAP_SPARSE_TINY, NULL));
     PyModule_AddObject(module, "LAYOUT", build_constclass('d', "LAYOUT", "OFF", LV_LAYOUT_OFF, "CENTER", LV_LAYOUT_CENTER, "COLUMN_LEFT", LV_LAYOUT_COLUMN_LEFT, "COLUMN_MID", LV_LAYOUT_COLUMN_MID, "COLUMN_RIGHT", LV_LAYOUT_COLUMN_RIGHT, "ROW_TOP", LV_LAYOUT_ROW_TOP, "ROW_MID", LV_LAYOUT_ROW_MID, "ROW_BOTTOM", LV_LAYOUT_ROW_BOTTOM, "PRETTY_TOP", LV_LAYOUT_PRETTY_TOP, "PRETTY_MID", LV_LAYOUT_PRETTY_MID, "PRETTY_BOTTOM", LV_LAYOUT_PRETTY_BOTTOM, "GRID", LV_LAYOUT_GRID, NULL));
     PyModule_AddObject(module, "FIT", build_constclass('d', "FIT", "NONE", LV_FIT_NONE, "TIGHT", LV_FIT_TIGHT, "PARENT", LV_FIT_PARENT, "MAX", LV_FIT_MAX, NULL));
@@ -19103,19 +17114,12 @@ PyInit_lvgl(void) {
     PyModule_AddObject(module, "BAR_TYPE", build_constclass('d', "BAR_TYPE", "NORMAL", LV_BAR_TYPE_NORMAL, "SYMMETRICAL", LV_BAR_TYPE_SYMMETRICAL, "CUSTOM", LV_BAR_TYPE_CUSTOM, NULL));
     PyModule_AddObject(module, "BAR_PART", build_constclass('d', "BAR_PART", "BG", LV_BAR_PART_BG, "INDIC", LV_BAR_PART_INDIC, NULL));
     PyModule_AddObject(module, "SLIDER_TYPE", build_constclass('d', "SLIDER_TYPE", "NORMAL", LV_SLIDER_TYPE_NORMAL, "SYMMETRICAL", LV_SLIDER_TYPE_SYMMETRICAL, "RANGE", LV_SLIDER_TYPE_RANGE, NULL));
-    PyModule_AddObject(module, "BTNMATRIX_CTRL", build_constclass('d', "BTNMATRIX_CTRL", "HIDDEN", LV_BTNMATRIX_CTRL_HIDDEN, "NO_REPEAT", LV_BTNMATRIX_CTRL_NO_REPEAT, "DISABLED", LV_BTNMATRIX_CTRL_DISABLED, "CHECKABLE", LV_BTNMATRIX_CTRL_CHECKABLE, "CHECK_STATE", LV_BTNMATRIX_CTRL_CHECK_STATE, "CLICK_TRIG", LV_BTNMATRIX_CTRL_CLICK_TRIG, NULL));
-    PyModule_AddObject(module, "BTNMATRIX_PART", build_constclass('d', "BTNMATRIX_PART", "BG", LV_BTNMATRIX_PART_BG, "BTN", LV_BTNMATRIX_PART_BTN, NULL));
     PyModule_AddObject(module, "ROLLER_MODE", build_constclass('d', "ROLLER_MODE", "NORMAL", LV_ROLLER_MODE_NORMAL, "INFINITE", LV_ROLLER_MODE_INFINITE, NULL));
     PyModule_AddObject(module, "ROLLER_PART", build_constclass('d', "ROLLER_PART", "BG", LV_ROLLER_PART_BG, "SELECTED", LV_ROLLER_PART_SELECTED, NULL));
     PyModule_AddObject(module, "CANVAS_PART", build_constclass('d', "CANVAS_PART", "MAIN", LV_CANVAS_PART_MAIN, NULL));
-    PyModule_AddObject(module, "MSGBOX_PART", build_constclass('d', "MSGBOX_PART", "BG", LV_MSGBOX_PART_BG, "BTN_BG", LV_MSGBOX_PART_BTN_BG, "BTN", LV_MSGBOX_PART_BTN, NULL));
-    PyModule_AddObject(module, "OBJMASK_PART", build_constclass('d', "OBJMASK_PART", "MAIN", LV_OBJMASK_PART_MAIN, NULL));
     PyModule_AddObject(module, "SWITCH_PART", build_constclass('d', "SWITCH_PART", "BG", LV_SWITCH_PART_BG, "INDIC", LV_SWITCH_PART_INDIC, "KNOB", LV_SWITCH_PART_KNOB, NULL));
     PyModule_AddObject(module, "ARC_TYPE", build_constclass('d', "ARC_TYPE", "NORMAL", LV_ARC_TYPE_NORMAL, "SYMMETRIC", LV_ARC_TYPE_SYMMETRIC, "REVERSE", LV_ARC_TYPE_REVERSE, NULL));
     PyModule_AddObject(module, "ARC_PART", build_constclass('d', "ARC_PART", "BG", LV_ARC_PART_BG, "INDIC", LV_ARC_PART_INDIC, "KNOB", LV_ARC_PART_KNOB, NULL));
-    PyModule_AddObject(module, "SPINNER_TYPE", build_constclass('d', "SPINNER_TYPE", "SPINNING_ARC", LV_SPINNER_TYPE_SPINNING_ARC, "FILLSPIN_ARC", LV_SPINNER_TYPE_FILLSPIN_ARC, "CONSTANT_ARC", LV_SPINNER_TYPE_CONSTANT_ARC, NULL));
-    PyModule_AddObject(module, "SPINNER_DIR", build_constclass('d', "SPINNER_DIR", "FORWARD", LV_SPINNER_DIR_FORWARD, "BACKWARD", LV_SPINNER_DIR_BACKWARD, NULL));
-    PyModule_AddObject(module, "SPINNER_PART", build_constclass('d', "SPINNER_PART", "BG", LV_SPINNER_PART_BG, "INDIC", LV_SPINNER_PART_INDIC, NULL));
 
 
     PyModule_AddObject(module, "SYMBOL", build_constclass('s', "SYMBOL", "AUDIO", LV_SYMBOL_AUDIO, "VIDEO", LV_SYMBOL_VIDEO, "LIST", LV_SYMBOL_LIST, "OK", LV_SYMBOL_OK, "CLOSE", LV_SYMBOL_CLOSE, "POWER", LV_SYMBOL_POWER, "SETTINGS", LV_SYMBOL_SETTINGS, "HOME", LV_SYMBOL_HOME, "DOWNLOAD", LV_SYMBOL_DOWNLOAD, "DRIVE", LV_SYMBOL_DRIVE, "REFRESH", LV_SYMBOL_REFRESH, "MUTE", LV_SYMBOL_MUTE, "VOLUME_MID", LV_SYMBOL_VOLUME_MID, "VOLUME_MAX", LV_SYMBOL_VOLUME_MAX, "IMAGE", LV_SYMBOL_IMAGE, "EDIT", LV_SYMBOL_EDIT, "PREV", LV_SYMBOL_PREV, "PLAY", LV_SYMBOL_PLAY, "PAUSE", LV_SYMBOL_PAUSE, "STOP", LV_SYMBOL_STOP, "NEXT", LV_SYMBOL_NEXT, "EJECT", LV_SYMBOL_EJECT, "LEFT", LV_SYMBOL_LEFT, "RIGHT", LV_SYMBOL_RIGHT, "PLUS", LV_SYMBOL_PLUS, "MINUS", LV_SYMBOL_MINUS, "EYE_OPEN", LV_SYMBOL_EYE_OPEN, "EYE_CLOSE", LV_SYMBOL_EYE_CLOSE, "WARNING", LV_SYMBOL_WARNING, "SHUFFLE", LV_SYMBOL_SHUFFLE, "UP", LV_SYMBOL_UP, "DOWN", LV_SYMBOL_DOWN, "LOOP", LV_SYMBOL_LOOP, "DIRECTORY", LV_SYMBOL_DIRECTORY, "UPLOAD", LV_SYMBOL_UPLOAD, "CALL", LV_SYMBOL_CALL, "CUT", LV_SYMBOL_CUT, "COPY", LV_SYMBOL_COPY, "SAVE", LV_SYMBOL_SAVE, "CHARGE", LV_SYMBOL_CHARGE, "PASTE", LV_SYMBOL_PASTE, "BELL", LV_SYMBOL_BELL, "KEYBOARD", LV_SYMBOL_KEYBOARD, "GPS", LV_SYMBOL_GPS, "FILE", LV_SYMBOL_FILE, "WIFI", LV_SYMBOL_WIFI, "BATTERY_FULL", LV_SYMBOL_BATTERY_FULL, "BATTERY_3", LV_SYMBOL_BATTERY_3, "BATTERY_2", LV_SYMBOL_BATTERY_2, "BATTERY_1", LV_SYMBOL_BATTERY_1, "BATTERY_EMPTY", LV_SYMBOL_BATTERY_EMPTY, "USB", LV_SYMBOL_USB, "BLUETOOTH", LV_SYMBOL_BLUETOOTH, "TRASH", LV_SYMBOL_TRASH, "BACKSPACE", LV_SYMBOL_BACKSPACE, "SD_CARD", LV_SYMBOL_SD_CARD, "NEW_LINE", LV_SYMBOL_NEW_LINE, "DUMMY", LV_SYMBOL_DUMMY, "BULLET", LV_SYMBOL_BULLET, NULL));
@@ -19133,7 +17137,7 @@ PyInit_lvgl(void) {
 
     // refcount for typesdict is initially 1; it is used by pyobj_from_lv
     // refcounts to py{name}_Type objects are incremented due to "O" format
-    typesdict = Py_BuildValue("{sOsOsOsOsOsOsOsOsOsOsOsOsOsOsOsOsOsOsOsO}",
+    typesdict = Py_BuildValue("{sOsOsOsOsOsOsOsOsOsOsOsOsOsOsO}",
         "lv_obj", &pylv_obj_Type,
         "lv_cont", &pylv_cont_Type,
         "lv_btn", &pylv_btn_Type,
@@ -19142,18 +17146,13 @@ PyInit_lvgl(void) {
         "lv_img", &pylv_img_Type,
         "lv_page", &pylv_page_Type,
         "lv_list", &pylv_list_Type,
-        "lv_table", &pylv_table_Type,
         "lv_checkbox", &pylv_checkbox_Type,
         "lv_bar", &pylv_bar_Type,
         "lv_slider", &pylv_slider_Type,
-        "lv_btnmatrix", &pylv_btnmatrix_Type,
         "lv_roller", &pylv_roller_Type,
         "lv_canvas", &pylv_canvas_Type,
-        "lv_msgbox", &pylv_msgbox_Type,
-        "lv_objmask", &pylv_objmask_Type,
         "lv_switch", &pylv_switch_Type,
-        "lv_arc", &pylv_arc_Type,
-        "lv_spinner", &pylv_spinner_Type);
+        "lv_arc", &pylv_arc_Type);
     
     PyModule_AddObject(module, "HOR_RES", PyLong_FromLong(LV_HOR_RES_MAX));
     PyModule_AddObject(module, "VER_RES", PyLong_FromLong(LV_VER_RES_MAX));
