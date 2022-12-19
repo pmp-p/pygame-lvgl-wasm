@@ -2,17 +2,6 @@
 #include "Python.h"
 #include "structmember.h"
 #include "lvgl/lvgl.h"
-#include "lv_png.h"
-
-#ifdef COMPILE_FOR_SDL
-	#define SDL_MAIN_HANDLED    // To fix SDL's "undefined reference to WinMain" issue
-	#include <SDL2/SDL.h>
-	#include "lv_drivers/display/monitor.h"
-	#include "lv_drivers/indev/mouse.h"
-#else
-	#include "lv_drivers/display/fbdev.h"
-	#include "lv_drivers/indev/evdev.h"
-#endif
 
 
 #if LV_COLOR_DEPTH != 16
@@ -31,6 +20,7 @@
  *
  * This would be a deadlock situation
  */
+
 #define LVGL_LOCK \
     if (lock) { \
         Py_BEGIN_ALLOW_THREADS \
@@ -51,6 +41,7 @@
 /****************************************************************
  * Forward declaration of type objects                          *
  ****************************************************************/
+
 PyObject *typesdict = NULL;
 
 <<<objects:
@@ -132,6 +123,7 @@ PyObject *PtrObject_fromptr(const void *ptr) {
 /****************************************************************
  * Helper functions                                              *
  ****************************************************************/
+
 static void (*lock)(void*) = NULL;
 static void* lock_arg = 0;
 
@@ -149,6 +141,7 @@ void lv_set_lock_unlock( void (*flock)(void *), void * flock_arg,
     lock = flock;
     unlock = funlock;
 }
+
 
 
 /* This signal handler is critical in the deallocation process of lvgl and
@@ -211,6 +204,7 @@ static void install_signal_cb(pylv_Obj * py_obj) {
 }
 
 
+
 /* Given an lvgl lv_obj, return the accompanying Python object. If the 
  * accompanying object already exists, it is returned (with ref count increased).
  * If the lv_obj is not yet known to Python, a new Python object is created,
@@ -219,6 +213,7 @@ static void install_signal_cb(pylv_Obj * py_obj) {
  *
  * Returns a new reference
  */
+
 PyObject * pyobj_from_lv(lv_obj_t *obj) {
     pylv_Obj *pyobj;
     lv_obj_type_t objtype;
@@ -259,7 +254,12 @@ PyObject * pyobj_from_lv(lv_obj_t *obj) {
 
 /* lvgl.Style class
  *
+ *
+ *
+ *
+ *
  */
+
 typedef struct {
     PyObject_HEAD
     lv_style_t *style;
@@ -328,9 +328,11 @@ static int pylv_style_t_arg_converter(PyObject *obj, void* target) {
     *(lv_style_t **)target = (void *)((StyleObject*)obj) -> style;
     Py_INCREF(obj); // Required since **target now uses the data. TODO: this leaks a reference; also support Py_CLEANUP_SUPPORTED
     return 1;
+
 }
 
 
+ 
 /* Given a pointer to a c struct, return the Python struct object
  * of that struct.
  *
@@ -338,8 +340,10 @@ static int pylv_style_t_arg_converter(PyObject *obj, void* target) {
  * associated Python object, i.e. the global ones and those
  * created from Python
  *
- * The module global struct_dict dictionary stores all known struct objects.
+ * The module global struct_dict dictionary stores all struct
+ * objects known
  */
+ 
 static PyObject* struct_dict;
 
 static PyObject *pystruct_from_lv(const void *c_struct) {
@@ -364,6 +368,10 @@ static PyObject *pystruct_from_lv(const void *c_struct) {
 }
 
 
+
+
+
+
 /****************************************************************
  * Custom types: structs                                        *  
  ****************************************************************/
@@ -374,6 +382,7 @@ typedef struct {
     PyObject *owner; // NULL = reference to global C data, self=allocated @ init, other object=sharing from that object; decref owner when we are deallocated
     bool readonly;
 } StructObject;
+
 
 static PyObject*
 Struct_repr(StructObject *self) {
@@ -456,12 +465,16 @@ pystruct_from_c(PyTypeObject *type, const void* ptr, size_t size, bool copy) {
         return NULL;
     }
 
+
     return (PyObject*)ret;
+
+
 }
 
 
 // Struct members whose type is unsupported, get / set a 'blob', which stores
 // a reference to the data, which can be copied but not accessed otherwise
+
 static PyTypeObject Blob_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "lvgl.blob",
@@ -475,6 +488,8 @@ static PyTypeObject Blob_Type = {
     .tp_as_buffer = &Struct_bufferprocs
 };
 
+
+
 static int long_to_int(PyObject *value, long *v, long min, long max) {
     long r = PyLong_AsLong(value);
     if ((r == -1) && PyErr_Occurred()) return -1;
@@ -484,7 +499,8 @@ static int long_to_int(PyObject *value, long *v, long min, long max) {
     }
     *v = r;
     return 0;
-}
+}   
+
 
 static int struct_check_readonly(StructObject *self) {
     if (self->readonly) {
@@ -534,9 +550,11 @@ struct_get_struct(StructObject *self, struct_closure_t *closure) {
         ret->readonly = self->readonly;
     }
     return (PyObject*)ret;
+
 }
 
-/* Generic setter for attributes which are a struct
+
+/* Generic setter for atrributes which are a struct
  *
  * Setting can be via either an object of the same type, or via a dict,
  * which could be passed as a keyword argument dict to a constructor of the struct
@@ -546,6 +564,7 @@ struct_get_struct(StructObject *self, struct_closure_t *closure) {
  */
 static int
 struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure) {
+
     PyObject *attr = NULL;
     
     if (struct_check_readonly(self)) return -1;
@@ -572,8 +591,10 @@ struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure
         
         Py_DECREF(attr);
         return 0;
+        
     }
-
+    
+    
     int isinstance = PyObject_IsInstance(value, (PyObject *)closure->type);
     
     if (isinstance == -1) return -1; // error in PyObject_IsInstance
@@ -590,6 +611,7 @@ struct_set_struct(StructObject *self, PyObject *value, struct_closure_t *closure
     
     return 0;
 }
+
 
 static int
 struct_init(StructObject *self, PyObject *args, PyObject *kwds, PyTypeObject *type, size_t size) 
@@ -758,6 +780,7 @@ static PyObject* build_constclass(char dtype, char *name, ...) {
 error:
     Py_DECREF(constclass_type);
     return NULL;
+
 }
 
 
@@ -769,6 +792,7 @@ error:
  * lv_obj_get_child and lv_obj_get_child_back are not really Pythonic. This
  * implementation returns a list of children
  */
+ 
 static PyObject*
 pylv_obj_get_children(pylv_Obj *self, PyObject *args, PyObject *kwds)
 {
@@ -842,6 +866,7 @@ void pylv_event_cb(lv_obj_t *obj, lv_event_t event) {
         PyErr_Print();
         PyErr_Clear();
     }
+    
 }
 
 static PyObject *
@@ -859,7 +884,8 @@ pylv_obj_set_event_cb(pylv_Obj *self, PyObject *args, PyObject *kwds) {
     LVGL_LOCK
     lv_obj_set_event_cb(self->ref, pylv_event_cb);
     LVGL_UNLOCK
-
+    
+    
     Py_RETURN_NONE;
 }
 
@@ -898,6 +924,9 @@ pylv_label_get_letter_on(pylv_Label *self, PyObject *args, PyObject *kwds)
     return Py_BuildValue("i", index);
 }
 
+
+
+
 static PyObject*
 pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
 {
@@ -909,7 +938,7 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "Os", kwlist , &img_src, &txt)) return NULL; 
       
-    if (img_src != Py_None) {
+    if (img_src!=Py_None) {
         PyErr_SetString(PyExc_ValueError, "only img_src == None is currently supported");
         return NULL;
     } 
@@ -919,7 +948,9 @@ pylv_list_add_btn(pylv_List *self, PyObject *args, PyObject *kwds)
     LVGL_UNLOCK
     
     return ret;
+
 }
+
 
 // lv_list_focus takes lv_obj_t* as first argument, but it is not the list itself!
 static PyObject*
@@ -948,25 +979,12 @@ pylv_list_focus(pylv_List *self, PyObject *args, PyObject *kwds)
     Py_RETURN_NONE;
 }
 
-// lv_img_set_src has a 'src' parameter with dynamic typing. It can be a (file path) string, symbol or pointer to an image.
-// We only support the string variant.
-static PyObject *
-pylv_img_set_src(pylv_Obj *self, PyObject *args, PyObject *kwds) {
-    if (!is_alive(self)) return NULL;
-    static char *kwlist[] = {"src", NULL};
-    const char * src;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist , &src)) return NULL;
-
-    LVGL_LOCK
-    lv_img_set_src(self->ref, src);
-    LVGL_UNLOCK
-    Py_RETURN_NONE;
-}
 
 
 /****************************************************************
  * Methods and object definitions                               *
  ****************************************************************/
+
 <<<objects:
     
 static void
@@ -984,6 +1002,7 @@ pylv_{name}_dealloc(pylv_{pyname} *self)
     Py_XDECREF(self->event_cb);
 
     Py_TYPE(self)->tp_free((PyObject *) self);
+
 }}
 
 static int
@@ -1029,9 +1048,12 @@ static PyTypeObject pylv_{name}_Type = {{
 >>>
 
 
+
+
 /****************************************************************
  * Miscellaneous functions                                      *
  ****************************************************************/
+
 static PyObject *
 pylv_scr_act(PyObject *self, PyObject *args) {
     lv_obj_t *scr;
@@ -1053,106 +1075,96 @@ pylv_scr_load(PyObject *self, PyObject *args, PyObject *kwds) {
     Py_RETURN_NONE;
 }
 
+
 static PyObject *
 poll(PyObject *self, PyObject *args) {
     LVGL_LOCK
-    lv_tick_inc(10);
+    lv_tick_inc(1);
     lv_task_handler();
     LVGL_UNLOCK
     
     Py_RETURN_NONE;
 }
 
-static PyObject *
-pylv_tick_inc(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"tick_period", NULL};
-    uint32_t tick_period;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "I", kwlist, &tick_period)) return NULL;
 
-    LVGL_LOCK
-    lv_tick_inc(tick_period);
-    LVGL_UNLOCK
+/* TODO: all the framebuffer display driver stuff could be separated (i.e. do not default to it but allow user to register custom frame buffer driver) */
 
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-pylv_task_handler(PyObject *self, PyObject *args) {
-    LVGL_LOCK
-    lv_task_handler();
-    LVGL_UNLOCK
-
-    Py_RETURN_NONE;
-}
-
-// Returns the inactive time for the spec
-// @parm disp is optional and can be None
-static PyObject *
-pylv_disp_get_inactive_time(PyObject *self, PyObject *args, PyObject *kwds) {
-    static char *kwlist[] = {"disp", NULL};
-    const lv_disp_t *disp = NULL;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &disp)) return NULL;
-
-    LVGL_LOCK
-    uint32_t inactive_time = lv_disp_get_inactive_time(disp);
-    LVGL_UNLOCK
-
-    return PyLong_FromLong(inactive_time);
-}
-
-// disp_buffer doesn't have to be equal to the screen size, it's an
-// intermediate buffer for screen manipulation. Larger will be faster.
 static lv_color_t disp_buf1[1024 * 10];
 lv_disp_buf_t disp_buffer;
+char framebuffer[LV_HOR_RES_MAX * LV_VER_RES_MAX * 2];
 
-// Register the display in LVGL
-static void init_display_driver() {
-    lv_disp_drv_t display_driver;
 
-    lv_disp_drv_init(&display_driver);
-    display_driver.hor_res = LV_HOR_RES_MAX;
-    display_driver.ver_res = LV_VER_RES_MAX;
+/* disp_flush should copy from the VDB (virtual display buffer to the screen.
+ * In our case, we copy to the framebuffer
+ */
 
-#ifdef COMPILE_FOR_SDL
-	display_driver.flush_cb = monitor_flush;
-#else
-	display_driver.flush_cb = fbdev_flush;
-#endif
+ 
+static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p) {
+    char *dest = framebuffer + ((area->y1)*LV_HOR_RES_MAX + area->x1) * 2;
+    char *src = (char *) color_p;
 
-    lv_disp_buf_init(&disp_buffer, disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
-    display_driver.buffer = &disp_buffer;
-
-    lv_disp_drv_register(&display_driver);
+    for(int32_t y = area->y1; y<=area->y2; y++) {
+        memcpy(dest, src, 2*(area->x2-area->x1+1));
+        src += 2*(area->x2-area->x1+1);
+        dest += 2*LV_HOR_RES_MAX;
+    }
+    
+    lv_disp_flush_ready(disp_drv);
 }
 
-// Initialize pointing device
-static lv_indev_t *init_pointing_device() {
-	lv_indev_drv_t indev_drv;
+static lv_disp_drv_t display_driver = {0};
+static lv_indev_drv_t indev_driver = {0};
+static int indev_driver_registered = 0;
+static int indev_x, indev_y, indev_state=0;
 
-	lv_indev_drv_init(&indev_drv);
-	indev_drv.type = LV_INDEV_TYPE_POINTER;
-#ifdef COMPILE_FOR_SDL
-	indev_drv.read_cb = mouse_read;
-#else
-	indev_drv.read_cb = evdev_read;
-#endif
-	return lv_indev_drv_register(&indev_drv);
+static bool indev_read(struct _lv_indev_drv_t * indev_drv, lv_indev_data_t *data) {
+    data->point.x = indev_x;
+    data->point.y = indev_y;
+    data->state = indev_state;
+
+    return false;
 }
+
+
+static PyObject *
+send_mouse_event(PyObject *self, PyObject *args, PyObject *kwds) {
+    static char *kwlist[] = {"x", "y", "pressed", NULL};
+    int x=0, y=0, pressed=0;
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iip", kwlist, &x, &y, &pressed)) {
+        return NULL;
+    }
+    
+    if (!indev_driver_registered) {
+        lv_indev_drv_init(&indev_driver);
+        indev_driver.type = LV_INDEV_TYPE_POINTER;
+        indev_driver.read_cb = indev_read;
+        lv_indev_drv_register(&indev_driver);
+        indev_driver_registered = 1;
+    }
+    indev_x = x;
+    indev_y = y;
+    indev_state = pressed ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
+    
+    Py_RETURN_NONE;
+}
+
 
 /****************************************************************
  *  Module global stuff                                         *
  ****************************************************************/
 
-// Define functions that can be called from Python
+
 static PyMethodDef lvglMethods[] = {
     {"scr_act",  pylv_scr_act, METH_NOARGS, NULL},
     {"scr_load", (PyCFunction)pylv_scr_load, METH_VARARGS | METH_KEYWORDS, NULL},
     {"poll", poll, METH_NOARGS, NULL},
-    {"tick_inc", (PyCFunction)pylv_tick_inc, METH_VARARGS | METH_KEYWORDS, NULL},
-    {"task_handler", pylv_task_handler, METH_NOARGS, NULL},
-    {"disp_get_inactive_time", (PyCFunction)pylv_disp_get_inactive_time, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"send_mouse_event", (PyCFunction)send_mouse_event, METH_VARARGS | METH_KEYWORDS, NULL},
+//    {"report_style_mod", (PyCFunction)report_style_mod, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
+
+
 
 static struct PyModuleDef lvglmodule = {
     PyModuleDef_HEAD_INIT,
@@ -1224,27 +1236,23 @@ PyInit_lvgl(void) {
     typesdict = Py_BuildValue("{<<<objects:sO>>>}"<<<objects:,
         "lv_{name}", &pylv_{name}_Type>>>);
     
+    PyModule_AddObject(module, "framebuffer", PyMemoryView_FromMemory(framebuffer, LV_HOR_RES_MAX * LV_VER_RES_MAX * 2, PyBUF_READ));
     PyModule_AddObject(module, "HOR_RES", PyLong_FromLong(LV_HOR_RES_MAX));
     PyModule_AddObject(module, "VER_RES", PyLong_FromLong(LV_VER_RES_MAX));
 
+
+    lv_disp_drv_init(&display_driver);
+    display_driver.hor_res = LV_HOR_RES_MAX;
+    display_driver.ver_res = LV_VER_RES_MAX;
+    
+    display_driver.flush_cb = disp_flush;
+    
+    lv_disp_buf_init(&disp_buffer,disp_buf1, NULL, sizeof(disp_buf1)/sizeof(lv_color_t));
+    display_driver.buffer = &disp_buffer;
+
     lv_init();
-
-#ifdef COMPILE_FOR_SDL
-    monitor_init();
-    mouse_init();
-#else
-    fbdev_init();   // Framebuffer device initialize
-    evdev_init();   // Event device initialize
-#endif
-
-    init_display_driver();
-    init_pointing_device();
-
-    // Debatable if this PNG decoding library should be initialised here or from the main Python program, but
-    // since the png-library is C-code it is easier to build here with the other C-code. Also, in LVGL v8 the
-    // integration of the identical lodepng library becomes a setting in lv_conf.h, so from the Python program
-    // view this is more future proof.
-    lv_png_init();
+    
+    lv_disp_drv_register(&display_driver);
 
     return module;
     
